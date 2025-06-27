@@ -5,13 +5,9 @@ import { Plus, MessageCircle, Users, Phone, Video, Camera } from 'lucide-react';
 
 interface FloatingActionButtonProps {
   activeTab: string;
-  onActionClick?: (action: string) => void;
 }
 
-const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ 
-  activeTab, 
-  onActionClick 
-}) => {
+const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const getMainIcon = () => {
@@ -29,42 +25,17 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     switch (activeTab) {
       case 'chats':
         return [
-          { 
-            icon: <MessageCircle className="w-5 h-5" />, 
-            label: 'New Chat', 
-            color: 'bg-blue-500',
-            action: 'new-chat'
-          },
-          { 
-            icon: <Users className="w-5 h-5" />, 
-            label: 'New Group', 
-            color: 'bg-green-500',
-            action: 'new-group'
-          },
+          { icon: <MessageCircle className="w-5 h-5" />, label: 'New Chat', color: 'bg-blue-500' },
+          { icon: <Users className="w-5 h-5" />, label: 'New Group', color: 'bg-green-500' },
         ];
       case 'status':
         return [
-          { 
-            icon: <Camera className="w-5 h-5" />, 
-            label: 'Camera', 
-            color: 'bg-purple-500',
-            action: 'camera'
-          },
+          { icon: <Camera className="w-5 h-5" />, label: 'Camera', color: 'bg-purple-500' },
         ];
       case 'calls':
         return [
-          { 
-            icon: <Phone className="w-5 h-5" />, 
-            label: 'Voice Call', 
-            color: 'bg-green-500',
-            action: 'voice-call'
-          },
-          { 
-            icon: <Video className="w-5 h-5" />, 
-            label: 'Video Call', 
-            color: 'bg-blue-500',
-            action: 'video-call'
-          },
+          { icon: <Phone className="w-5 h-5" />, label: 'Voice Call', color: 'bg-green-500' },
+          { icon: <Video className="w-5 h-5" />, label: 'Video Call', color: 'bg-blue-500' },
         ];
       default:
         return [];
@@ -72,11 +43,6 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   };
 
   const actions = getActions();
-
-  const handleActionClick = (action: string) => {
-    setIsOpen(false);
-    onActionClick?.(action);
-  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -94,7 +60,6 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
               </span>
               <Button
                 size="sm"
-                onClick={() => handleActionClick(action.action)}
                 className={`${action.color} hover:scale-110 transition-transform duration-200 shadow-lg w-12 h-12 rounded-full`}
               >
                 {action.icon}
