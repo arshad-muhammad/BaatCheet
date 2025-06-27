@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUser, UserButton } from '@clerk/clerk-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Settings, Search } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
 
 const Header = () => {
-  const { user } = useAuthStore();
+  const { user } = useUser();
   const navigate = useNavigate();
 
   return (
@@ -15,15 +15,15 @@ const Header = () => {
       <div className="max-w-md mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Avatar 
-              className="w-10 h-10 cursor-pointer" 
-              onClick={() => navigate('/profile')}
-            >
-              <AvatarImage src={user?.avatar} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white text-sm">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
+            <div onClick={() => navigate('/profile')} className="cursor-pointer">
+              <UserButton 
+                appearance={{
+                  elements: {
+                    avatarBox: "w-10 h-10"
+                  }
+                }}
+              />
+            </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">Messages</h1>
             </div>

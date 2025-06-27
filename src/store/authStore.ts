@@ -19,6 +19,8 @@ interface AuthState {
   updateProfile: (updates: Partial<User>) => void;
 }
 
+// Note: This store is now mainly for compatibility with existing components
+// The actual authentication state is managed by Clerk
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
