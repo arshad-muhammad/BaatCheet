@@ -5,7 +5,7 @@ import ClerkAuthPage from '../components/auth/ClerkAuthPage';
 import HomePage from '../components/home/HomePage';
 
 const Index = () => {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
 
   // Show loading state while Clerk is initializing
   if (!isLoaded) {
@@ -19,10 +19,13 @@ const Index = () => {
     );
   }
 
+  // If user is not signed in, show auth page
   if (!isSignedIn) {
     return <ClerkAuthPage />;
   }
 
+  // User is signed in, show home page
+  console.log('User is signed in:', user?.emailAddresses[0]?.emailAddress);
   return <HomePage />;
 };
 
