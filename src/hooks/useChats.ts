@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useUser, useAuth } from '@clerk/clerk-react';
+import { supabase, setSupabaseAuth } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface Chat {
@@ -32,10 +32,28 @@ interface Profile {
 
 export const useChats = () => {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<{ [chatId: string]: Message[] }>({});
   const [profiles, setProfiles] = useState<{ [userId: string]: Profile }>({});
   const [loading, setLoading] = useState(true);
+
+  // Set up Supabase auth with Clerk token
+  useEffect(() => {
+    const setupSupabaseAuth = async () => {
+      if (user) {
+        try {
+          const token = await getToken({ template: 'supabase' });
+          console.log('Setting Supabase auth with Clerk token');
+          setSupabaseAuth(token);
+        } catch (error) {
+          console.error('Error getting Clerk token:', error);
+        }
+      }
+    };
+
+    setupSupabaseAuth();
+  }, [user, getToken]);
 
   // Sync user profile with Supabase when Clerk user is available
   useEffect(() => {
@@ -238,6 +256,10 @@ export const useChats = () => {
       console.log('Chat name:', name);
       console.log('Member emails:', memberEmails);
       console.log('Is group:', isGroup);
+      
+      // Ensure we have the latest Clerk token
+      const token = await getToken({ template: 'supabase' });
+      setSupabaseAuth(token);
       
       // First, ensure current user profile exists
       await syncUserProfile();
