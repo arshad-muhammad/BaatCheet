@@ -52,7 +52,6 @@ const ChatScreen = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="max-w-md mx-auto bg-white/80 backdrop-blur-sm shadow-xl min-h-screen flex flex-col">
-        {/* Header */}
         <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 p-4">
           <div className="flex items-center space-x-3">
             <Button
@@ -104,14 +103,12 @@ const ChatScreen = () => {
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Cpath d="M11 18c7.7 0 14 6.3 14 14s-6.3 14-14 14-14-6.3-14-14 6.3-14 14-14zm69 0c7.7 0 14 6.3 14 14s-6.3 14-14 14-14-6.3-14-14 6.3-14 14-14z" fill="%23f0f0f0" fill-opacity="0.1"/%3E%3C/svg%3E')] bg-repeat">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
           {chatMessages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}
         </div>
 
-        {/* Input */}
         <div className="bg-white/90 backdrop-blur-sm border-t border-gray-100 p-4">
           <div className="flex items-center space-x-3">
             <div className="flex space-x-2">
