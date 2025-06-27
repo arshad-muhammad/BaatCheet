@@ -9,28 +9,18 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-  },
-  global: {
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-    },
-  },
-});
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Function to set Clerk token for Supabase auth
 export const setSupabaseAuth = (token: string | null) => {
   if (token) {
-    // Create a new session with the Clerk token
-    supabase.auth.setSession({
-      access_token: token,
-      refresh_token: token,
-    });
+    console.log('Setting Supabase auth with Clerk token');
+    // Set the Authorization header with the Clerk JWT token
+    supabase.rest.headers['Authorization'] = `Bearer ${token}`;
+    supabase.realtime.setAuth(token);
   } else {
-    // Sign out to clear the session
-    supabase.auth.signOut();
+    console.log('Clearing Supabase auth');
+    delete supabase.rest.headers['Authorization'];
+    supabase.realtime.setAuth(null);
   }
 };

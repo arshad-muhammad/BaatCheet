@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { supabase, setSupabaseAuth } from '@/integrations/supabase/client';
@@ -44,11 +45,14 @@ export const useChats = () => {
       if (user) {
         try {
           const token = await getToken({ template: 'supabase' });
-          console.log('Setting Supabase auth with Clerk token');
+          console.log('Setting up Supabase auth for user:', user.id);
           setSupabaseAuth(token);
         } catch (error) {
           console.error('Error getting Clerk token:', error);
+          toast.error('Authentication setup failed');
         }
+      } else {
+        setSupabaseAuth(null);
       }
     };
 
@@ -67,6 +71,10 @@ export const useChats = () => {
 
     try {
       console.log('Syncing user profile for:', user.id);
+      
+      // Ensure we have a fresh token
+      const token = await getToken({ template: 'supabase' });
+      setSupabaseAuth(token);
       
       // Check if profile exists
       const { data: existingProfile, error: fetchError } = await supabase
@@ -132,6 +140,10 @@ export const useChats = () => {
     try {
       console.log('Loading chats for user:', user.id);
       
+      // Ensure we have a fresh token
+      const token = await getToken({ template: 'supabase' });
+      setSupabaseAuth(token);
+      
       const { data: chatMemberships, error } = await supabase
         .from('chat_members')
         .select(`
@@ -151,7 +163,8 @@ export const useChats = () => {
 
       if (error) {
         console.error('Error loading chats:', error);
-        throw error;
+        toast.error(`Failed to load chats: ${error.message}`);
+        return;
       }
 
       if (chatMemberships) {
