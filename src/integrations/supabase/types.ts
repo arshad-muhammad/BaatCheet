@@ -11,22 +11,22 @@ export type Database = {
     Tables: {
       chat_members: {
         Row: {
-          chat_id: string
+          chat_id: string | null
           id: string
           joined_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
-          chat_id: string
+          chat_id?: string | null
           id?: string
           joined_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
-          chat_id?: string
+          chat_id?: string | null
           id?: string
           joined_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -34,6 +34,13 @@ export type Database = {
             columns: ["chat_id"]
             isOneToOne: false
             referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -63,34 +70,42 @@ export type Database = {
           name?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chats_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
-          chat_id: string
+          chat_id: string | null
           content: string
           created_at: string | null
           id: string
           message_type: string | null
-          sender_id: string
+          sender_id: string | null
           updated_at: string | null
         }
         Insert: {
-          chat_id: string
+          chat_id?: string | null
           content: string
           created_at?: string | null
           id?: string
           message_type?: string | null
-          sender_id: string
+          sender_id?: string | null
           updated_at?: string | null
         }
         Update: {
-          chat_id?: string
+          chat_id?: string | null
           content?: string
           created_at?: string | null
           id?: string
           message_type?: string | null
-          sender_id?: string
+          sender_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -99,6 +114,13 @@ export type Database = {
             columns: ["chat_id"]
             isOneToOne: false
             referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

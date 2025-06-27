@@ -48,31 +48,30 @@ export const useChats = () => {
     if (!user) return;
 
     try {
-      // Check if profile exists using email instead of ID
+      // Check if profile exists
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('email', user.emailAddresses[0]?.emailAddress)
+        .eq('id', user.id)
         .single();
 
       if (!existingProfile) {
-        // Insert profile with email as primary identifier
+        // Insert new profile
         await supabase.from('profiles').insert({
-          id: user.id, // Keep Clerk ID for consistency
+          id: user.id,
           email: user.emailAddresses[0]?.emailAddress,
           full_name: user.fullName || user.firstName || 'User',
           avatar_url: user.imageUrl
         });
-      } else if (existingProfile.id !== user.id) {
-        // Update the profile ID if it doesn't match current user ID
+      } else {
+        // Update existing profile
         await supabase
           .from('profiles')
           .update({
-            id: user.id,
             full_name: user.fullName || user.firstName || 'User',
             avatar_url: user.imageUrl
           })
-          .eq('email', user.emailAddresses[0]?.emailAddress);
+          .eq('id', user.id);
       }
     } catch (error) {
       console.error('Error syncing user profile:', error);
