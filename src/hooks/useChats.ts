@@ -48,19 +48,31 @@ export const useChats = () => {
     if (!user) return;
 
     try {
+      // Check if profile exists using email instead of ID
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('email', user.emailAddresses[0]?.emailAddress)
         .single();
 
       if (!existingProfile) {
+        // Insert profile with email as primary identifier
         await supabase.from('profiles').insert({
-          id: user.id,
+          id: user.id, // Keep Clerk ID for consistency
           email: user.emailAddresses[0]?.emailAddress,
           full_name: user.fullName || user.firstName || 'User',
           avatar_url: user.imageUrl
         });
+      } else if (existingProfile.id !== user.id) {
+        // Update the profile ID if it doesn't match current user ID
+        await supabase
+          .from('profiles')
+          .update({
+            id: user.id,
+            full_name: user.fullName || user.firstName || 'User',
+            avatar_url: user.imageUrl
+          })
+          .eq('email', user.emailAddresses[0]?.emailAddress);
       }
     } catch (error) {
       console.error('Error syncing user profile:', error);
@@ -180,7 +192,10 @@ export const useChats = () => {
     try {
       console.log('Creating chat with emails:', memberEmails);
       
-      // First, find user IDs for the provided emails
+      // First, ensure current user profile exists
+      await syncUserProfile();
+      
+      // Find user profiles for the provided emails
       const { data: memberProfiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, email')
