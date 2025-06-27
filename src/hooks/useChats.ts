@@ -102,24 +102,31 @@ export const useChats = () => {
     try {
       const { data: messagesData } = await supabase
         .from('messages')
-        .select(`
-          *,
-          profiles:sender_id (
-            id,
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });
 
       if (messagesData) {
+        // Load sender profiles for messages
+        const senderIds = [...new Set(messagesData.map(msg => msg.sender_id))];
+        const { data: senderProfiles } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('id', senderIds);
+
+        const profilesMap = senderProfiles?.reduce((acc, profile) => {
+          acc[profile.id] = profile;
+          return acc;
+        }, {} as { [id: string]: Profile }) || {};
+
+        const messagesWithSenders = messagesData.map(msg => ({
+          ...msg,
+          sender: profilesMap[msg.sender_id]
+        }));
+
         setMessages(prev => ({
           ...prev,
-          [chatId]: messagesData.map(msg => ({
-            ...msg,
-            sender: msg.profiles
-          }))
+          [chatId]: messagesWithSenders
         }));
       }
     } catch (error) {
@@ -139,24 +146,24 @@ export const useChats = () => {
           sender_id: user.id,
           content
         })
-        .select(`
-          *,
-          profiles:sender_id (
-            id,
-            full_name,
-            avatar_url
-          )
-        `)
+        .select()
         .single();
 
       if (newMessage) {
+        // Get sender profile
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
         setMessages(prev => ({
           ...prev,
           [chatId]: [
             ...(prev[chatId] || []),
             {
               ...newMessage,
-              sender: newMessage.profiles
+              sender: senderProfile
             }
           ]
         }));

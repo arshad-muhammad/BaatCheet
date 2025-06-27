@@ -79,6 +79,10 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onChatCrea
     }
   };
 
+  const handleGroupCheckChange = (checked: boolean | 'indeterminate') => {
+    setIsGroup(checked === true);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -91,7 +95,7 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onChatCrea
             <Checkbox
               id="isGroup"
               checked={isGroup}
-              onCheckedChange={setIsGroup}
+              onCheckedChange={handleGroupCheckChange}
             />
             <Label htmlFor="isGroup">Group Chat</Label>
           </div>
