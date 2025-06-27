@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,23 +6,65 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthStore } from '../../store/authStore';
 import { ArrowLeft, Camera, Edit2, Check, X } from 'lucide-react';
+import { auth, db, storage } from '../../lib/firebase';
+import { ref as dbRef, set } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { signOut } from 'firebase/auth';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, updateProfile } = useAuthStore();
+  const { user, updateProfile, logout } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [status, setStatus] = useState(user?.status || '');
+  const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSave = () => {
-    updateProfile({ name, status });
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!user) return;
+    setUploading(true);
+    setError(null);
+    let photoURL = user.avatar || '';
+    try {
+      if (profilePic) {
+        const picRef = storageRef(storage, `profile_pics/${user.id}`);
+        await uploadBytes(picRef, profilePic);
+        photoURL = await getDownloadURL(picRef);
+      }
+      await set(dbRef(db, `users/${user.id}`), {
+        name,
+        status,
+        phone: user.phone || '',
+        email: user.email || '',
+        photoURL,
+      });
+      updateProfile({ name, status, avatar: photoURL });
+      setIsEditing(false);
+      setProfilePic(null);
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'message' in err) {
+        setError((err as { message: string }).message || 'Update failed');
+      } else {
+        setError('Update failed');
+      }
+    }
+    setUploading(false);
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    logout();
+    localStorage.removeItem('userId');
+    navigate('/auth');
   };
 
   const handleCancel = () => {
     setName(user?.name || '');
     setStatus(user?.status || '');
+    setProfilePic(null);
     setIsEditing(false);
+    setError(null);
   };
 
   return (
@@ -80,17 +121,32 @@ const ProfilePage = () => {
         <div className="p-8 text-center border-b border-gray-100">
           <div className="relative inline-block">
             <Avatar className="w-32 h-32 mx-auto">
-              <AvatarImage src={user?.avatar} />
+              <AvatarImage src={profilePic ? URL.createObjectURL(profilePic) : user?.avatar} />
               <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white text-4xl">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            <Button
-              size="sm"
-              className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 shadow-lg"
-            >
-              <Camera className="w-4 h-4" />
-            </Button>
+            {isEditing && (
+              <>
+                <Button
+                  size="sm"
+                  className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 shadow-lg"
+                  asChild
+                >
+                  <label htmlFor="profile-pic-input">
+                    <Camera className="w-4 h-4" />
+                  </label>
+                </Button>
+                <input
+                  id="profile-pic-input"
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={e => setProfilePic(e.target.files?.[0] || null)}
+                  disabled={uploading}
+                />
+              </>
+            )}
           </div>
         </div>
 
@@ -106,6 +162,7 @@ const ProfilePage = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
+                disabled={uploading}
               />
             ) : (
               <p className="mt-2 text-lg text-gray-900">{user?.name || 'Not set'}</p>
@@ -123,6 +180,7 @@ const ProfilePage = () => {
                 onChange={(e) => setStatus(e.target.value)}
                 placeholder="Available"
                 className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
+                disabled={uploading}
               />
             ) : (
               <p className="mt-2 text-gray-600">{user?.status || 'Available'}</p>
@@ -161,6 +219,12 @@ const ProfilePage = () => {
               <span className="text-sm text-gray-500">My Contacts</span>
             </div>
           </div>
+        </div>
+
+        {/* Error and Logout */}
+        <div className="p-6 border-t border-gray-100 flex flex-col items-center">
+          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+          <Button onClick={handleLogout} variant="destructive" className="w-full max-w-xs">Logout</Button>
         </div>
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 interface Message {
@@ -24,6 +23,9 @@ interface Chat {
   isPinned?: boolean;
   isArchived?: boolean;
   members?: string[];
+  otherUserId?: string;
+  otherUserName?: string;
+  otherUserAvatar?: string;
 }
 
 interface ChatState {
@@ -34,6 +36,7 @@ interface ChatState {
   addMessage: (chatId: string, message: Omit<Message, 'id' | 'timestamp'>) => void;
   toggleStar: (chatId: string, messageId: string) => void;
   togglePin: (chatId: string) => void;
+  setChats: (chats: Chat[]) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -115,4 +118,5 @@ export const useChatStore = create<ChatState>((set, get) => ({
       chat.id === chatId ? { ...chat, isPinned: !chat.isPinned } : chat
     ),
   })),
+  setChats: (chats) => set({ chats }),
 }));
