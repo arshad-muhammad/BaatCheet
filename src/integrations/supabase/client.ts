@@ -27,7 +27,6 @@ export const setSupabaseAuth = (token: string | null) => {
     supabase.auth.setSession({
       access_token: token,
       refresh_token: '',
-      user: null as any,
       token_type: 'bearer',
       expires_in: 3600,
       expires_at: Math.floor(Date.now() / 1000) + 3600
