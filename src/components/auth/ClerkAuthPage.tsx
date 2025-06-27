@@ -40,9 +40,8 @@ const ClerkAuthPage = () => {
                     headerSubtitle: 'text-gray-600',
                   }
                 }}
-                routing="path"
-                path="/sign-in"
-                signUpUrl="/sign-up"
+                fallbackRedirectUrl="/"
+                forceRedirectUrl="/"
               />
             </div>
           </TabsContent>
@@ -58,14 +57,13 @@ const ClerkAuthPage = () => {
                     headerSubtitle: 'text-gray-600',
                   }
                 }}
-                routing="path"
-                path="/sign-up"
-                signInUrl="/sign-in"
+                fallbackRedirectUrl="/"
+                forceRedirectUrl="/"
               />
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </Card>
     </div>
   );
 };
