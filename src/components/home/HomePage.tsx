@@ -1,18 +1,31 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ChatList from './ChatList';
 import StatusList from './StatusList';
 import CallsList from './CallsList';
 import Header from '../common/Header';
 import FloatingActionButton from '../common/FloatingActionButton';
+import NewChatModal from '../chat/NewChatModal';
 import { Search, MessageCircle, Users, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('chats');
+  const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleChatCreated = (chatId: string) => {
+    navigate(`/chat/${chatId}`);
+  };
+
+  const handleFloatingActionClick = (action: string) => {
+    if (action === 'new-chat' || action === 'new-group') {
+      setIsNewChatModalOpen(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -71,8 +84,17 @@ const HomePage = () => {
           </TabsContent>
         </Tabs>
 
-        <FloatingActionButton activeTab={activeTab} />
+        <FloatingActionButton 
+          activeTab={activeTab} 
+          onActionClick={handleFloatingActionClick}
+        />
       </div>
+
+      <NewChatModal
+        isOpen={isNewChatModalOpen}
+        onClose={() => setIsNewChatModalOpen(false)}
+        onChatCreated={handleChatCreated}
+      />
     </div>
   );
 };

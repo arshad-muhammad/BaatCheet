@@ -1,23 +1,30 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useChatStore } from '../../store/chatStore';
+import { useChats } from '../../hooks/useChats';
 import { ArrowLeft, Phone, Video, Settings, Send, Mic, Camera, File } from 'lucide-react';
-import MessageBubble from './MessageBubble';
 import { formatDistanceToNow } from 'date-fns';
 
 const ChatScreen = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { chats, messages, addMessage } = useChatStore();
+  const { user } = useUser();
+  const { chats, messages, loadMessages, sendMessage } = useChats();
   const [newMessage, setNewMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
 
   const chat = chats.find(c => c.id === id);
   const chatMessages = messages[id || ''] || [];
+
+  useEffect(() => {
+    if (id) {
+      loadMessages(id);
+    }
+  }, [id]);
 
   if (!chat) {
     return (
@@ -32,19 +39,16 @@ const ChatScreen = () => {
     );
   }
 
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      addMessage(id!, {
-        senderId: 'me',
-        text: newMessage.trim(),
-        status: 'sent',
-      });
+  const handleSendMessage = async () => {
+    if (newMessage.trim() && id) {
+      await sendMessage(id, newMessage.trim());
       setNewMessage('');
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSendMessage();
     }
   };
@@ -52,6 +56,7 @@ const ChatScreen = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="max-w-md mx-auto bg-white/80 backdrop-blur-sm shadow-xl min-h-screen flex flex-col">
+        {/* Header */}
         <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 p-4">
           <div className="flex items-center space-x-3">
             <Button
@@ -64,27 +69,16 @@ const ChatScreen = () => {
             </Button>
 
             <div className="flex items-center space-x-3 flex-1">
-              <div className="relative">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={chat.avatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white">
-                    {chat.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {!chat.isGroup && chat.isOnline && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
-                )}
-              </div>
+              <Avatar className="w-10 h-10">
+                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white">
+                  {chat.name?.charAt(0).toUpperCase() || 'C'}
+                </AvatarFallback>
+              </Avatar>
 
               <div className="flex-1 min-w-0">
-                <h2 className="font-medium text-gray-900 truncate">{chat.name}</h2>
+                <h2 className="font-medium text-gray-900 truncate">{chat.name || 'Chat'}</h2>
                 <p className="text-sm text-gray-500">
-                  {chat.isGroup 
-                    ? `${chat.members?.length || 0} members`
-                    : chat.isOnline 
-                      ? 'Online' 
-                      : `Last seen ${formatDistanceToNow(new Date(Date.now() - 1000 * 60 * 30), { addSuffix: true })}`
-                  }
+                  {chat.is_group ? 'Group chat' : 'Direct message'}
                 </p>
               </div>
             </div>
@@ -103,12 +97,42 @@ const ChatScreen = () => {
           </div>
         </div>
 
+        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-          {chatMessages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
-          ))}
+          {chatMessages.map((message) => {
+            const isOwnMessage = message.sender_id === user?.id;
+            
+            return (
+              <div key={message.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-xs lg:max-w-md ${isOwnMessage ? 'ml-8' : 'mr-8'}`}>
+                  <div
+                    className={`rounded-2xl px-4 py-2 shadow-sm ${
+                      isOwnMessage
+                        ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-br-md'
+                        : 'bg-white text-gray-800 rounded-bl-md border border-gray-100'
+                    }`}
+                  >
+                    {!isOwnMessage && chat.is_group && (
+                      <p className="text-xs font-medium mb-1 opacity-70">
+                        {message.sender?.full_name || 'User'}
+                      </p>
+                    )}
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                    <div className={`flex items-center justify-end mt-1 ${
+                      isOwnMessage ? 'text-white/80' : 'text-gray-500'
+                    }`}>
+                      <span className="text-xs">
+                        {formatDistanceToNow(new Date(message.created_at), { addSuffix: false })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
+        {/* Input */}
         <div className="bg-white/90 backdrop-blur-sm border-t border-gray-100 p-4">
           <div className="flex items-center space-x-3">
             <div className="flex space-x-2">
