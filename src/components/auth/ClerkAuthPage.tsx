@@ -40,8 +40,8 @@ const ClerkAuthPage = () => {
                     headerSubtitle: 'text-gray-600',
                   }
                 }}
-                fallbackRedirectUrl="/"
-                forceRedirectUrl="/"
+                fallbackRedirectUrl="/chat/1"
+                forceRedirectUrl="/chat/1"
               />
             </div>
           </TabsContent>
@@ -57,8 +57,8 @@ const ClerkAuthPage = () => {
                     headerSubtitle: 'text-gray-600',
                   }
                 }}
-                fallbackRedirectUrl="/"
-                forceRedirectUrl="/"
+                fallbackRedirectUrl="/chat/1"
+                forceRedirectUrl="/chat/1"
               />
             </div>
           </TabsContent>

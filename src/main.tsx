@@ -13,8 +13,8 @@ if (!PUBLISHABLE_KEY) {
 createRoot(document.getElementById("root")!).render(
   <ClerkProvider 
     publishableKey={PUBLISHABLE_KEY}
-    afterSignInUrl="/"
-    afterSignUpUrl="/"
+    afterSignInUrl="/chat/1"
+    afterSignUpUrl="/chat/1"
   >
     <App />
   </ClerkProvider>
