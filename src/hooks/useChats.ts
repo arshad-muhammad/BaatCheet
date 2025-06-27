@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -239,14 +238,6 @@ export const useChats = () => {
       console.log('Chat name:', name);
       console.log('Member emails:', memberEmails);
       console.log('Is group:', isGroup);
-      
-      // Debug: Let's check what auth.jwt() ->> 'sub' returns
-      console.log('=== Debugging JWT token ===');
-      const { data: debugResult, error: debugError } = await supabase
-        .rpc('debug_auth_token');
-      
-      console.log('Debug result:', debugResult);
-      console.log('Debug error:', debugError);
       
       // First, ensure current user profile exists
       await syncUserProfile();
