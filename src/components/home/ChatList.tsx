@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChatStore } from '../../store/chatStore';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
-import { Pin, Users, Check, CheckCheck } from 'lucide-react';
+import { Pin, Users, Check, CheckCheck, MessageCircle } from 'lucide-react';
 
 interface ChatListProps {
   searchQuery: string;
