@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Chat {
   id: string;
@@ -48,33 +49,62 @@ export const useChats = () => {
     if (!user) return;
 
     try {
+      console.log('Syncing user profile for:', user.id);
+      
       // Check if profile exists
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (!existingProfile) {
-        // Insert new profile
-        await supabase.from('profiles').insert({
-          id: user.id,
-          email: user.emailAddresses[0]?.emailAddress,
-          full_name: user.fullName || user.firstName || 'User',
-          avatar_url: user.imageUrl
-        });
-      } else {
+      console.log('Existing profile:', existingProfile);
+      console.log('Fetch error:', fetchError);
+
+      if (!existingProfile && fetchError?.code === 'PGRST116') {
+        // Profile doesn't exist, insert new one
+        console.log('Creating new profile...');
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.emailAddresses[0]?.emailAddress,
+            full_name: user.fullName || user.firstName || 'User',
+            avatar_url: user.imageUrl
+          })
+          .select()
+          .single();
+
+        console.log('New profile created:', newProfile);
+        console.log('Insert error:', insertError);
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          throw insertError;
+        }
+      } else if (existingProfile) {
         // Update existing profile
-        await supabase
+        console.log('Updating existing profile...');
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({
             full_name: user.fullName || user.firstName || 'User',
             avatar_url: user.imageUrl
           })
           .eq('id', user.id);
+
+        console.log('Update error:', updateError);
+        
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+        }
+      } else if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching profile:', fetchError);
+        throw fetchError;
       }
     } catch (error) {
       console.error('Error syncing user profile:', error);
+      toast.error('Failed to sync user profile');
     }
   };
 
@@ -83,7 +113,9 @@ export const useChats = () => {
     if (!user) return;
 
     try {
-      const { data: chatMemberships } = await supabase
+      console.log('Loading chats for user:', user.id);
+      
+      const { data: chatMemberships, error } = await supabase
         .from('chat_members')
         .select(`
           chat_id,
@@ -97,12 +129,22 @@ export const useChats = () => {
         `)
         .eq('user_id', user.id);
 
+      console.log('Chat memberships:', chatMemberships);
+      console.log('Load chats error:', error);
+
+      if (error) {
+        console.error('Error loading chats:', error);
+        throw error;
+      }
+
       if (chatMemberships) {
         const chatsData = chatMemberships.map(membership => membership.chats).filter(Boolean);
+        console.log('Processed chats data:', chatsData);
         setChats(chatsData as Chat[]);
       }
     } catch (error) {
       console.error('Error loading chats:', error);
+      toast.error('Failed to load chats');
     } finally {
       setLoading(false);
     }
@@ -186,15 +228,23 @@ export const useChats = () => {
 
   // Create a new chat
   const createChat = async (name: string, memberEmails: string[], isGroup: boolean = false) => {
-    if (!user) return;
+    if (!user) {
+      console.error('No user available for chat creation');
+      throw new Error('User not authenticated');
+    }
 
     try {
-      console.log('Creating chat with emails:', memberEmails);
+      console.log('=== Starting chat creation ===');
+      console.log('User ID:', user.id);
+      console.log('Chat name:', name);
+      console.log('Member emails:', memberEmails);
+      console.log('Is group:', isGroup);
       
       // First, ensure current user profile exists
       await syncUserProfile();
       
       // Find user profiles for the provided emails
+      console.log('Finding profiles for emails:', memberEmails);
       const { data: memberProfiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, email')
@@ -205,7 +255,7 @@ export const useChats = () => {
 
       if (profileError) {
         console.error('Error finding user profiles:', profileError);
-        throw new Error('Error finding user profiles');
+        throw new Error(`Error finding user profiles: ${profileError.message}`);
       }
 
       if (!memberProfiles || memberProfiles.length === 0) {
@@ -221,13 +271,17 @@ export const useChats = () => {
       }
 
       // Create the chat
+      console.log('Creating chat...');
+      const chatData = {
+        name,
+        is_group: isGroup,
+        created_by: user.id
+      };
+      console.log('Chat data to insert:', chatData);
+
       const { data: newChat, error: chatError } = await supabase
         .from('chats')
-        .insert({
-          name,
-          is_group: isGroup,
-          created_by: user.id
-        })
+        .insert(chatData)
         .select()
         .single();
 
@@ -236,7 +290,13 @@ export const useChats = () => {
 
       if (chatError) {
         console.error('Error creating chat:', chatError);
-        throw new Error('Failed to create chat');
+        console.error('Chat error details:', {
+          code: chatError.code,
+          message: chatError.message,
+          details: chatError.details,
+          hint: chatError.hint
+        });
+        throw new Error(`Failed to create chat: ${chatError.message}`);
       }
 
       if (newChat) {
@@ -255,17 +315,29 @@ export const useChats = () => {
           .from('chat_members')
           .insert(membersToAdd);
 
+        console.log('Members insertion error:', membersError);
+
         if (membersError) {
           console.error('Error adding chat members:', membersError);
-          throw new Error('Failed to add members to chat');
+          console.error('Members error details:', {
+            code: membersError.code,
+            message: membersError.message,
+            details: membersError.details,
+            hint: membersError.hint
+          });
+          throw new Error(`Failed to add members to chat: ${membersError.message}`);
         }
 
         // Reload chats
         await loadChats();
+        console.log('=== Chat creation completed successfully ===');
+        toast.success('Chat created successfully!');
         return newChat.id;
       }
     } catch (error) {
+      console.error('=== Chat creation failed ===');
       console.error('Error creating chat:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create chat');
       throw error;
     }
   };
