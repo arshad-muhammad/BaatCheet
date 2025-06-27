@@ -23,12 +23,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 export const setSupabaseAuth = (token: string | null) => {
   if (token) {
     console.log('Setting Supabase auth with Clerk token');
-    // Set global headers for authentication
-    supabase.functions.setAuth(token);
-    supabase.realtime.setAuth(token);
+    // Set the Authorization header with the Clerk JWT token
+    supabase.auth.setSession({ access_token: token, refresh_token: '' });
   } else {
     console.log('Clearing Supabase auth');
-    supabase.functions.setAuth(null);
-    supabase.realtime.setAuth(null);
+    supabase.auth.signOut();
   }
 };
