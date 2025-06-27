@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useChats } from '../../hooks/useChats';
 import { X, Plus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface NewChatModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface NewChatModalProps {
 
 const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onChatCreated }) => {
   const { createChat, loadAllProfiles } = useChats();
+  const { toast } = useToast();
   const [chatName, setChatName] = useState('');
   const [memberEmails, setMemberEmails] = useState<string[]>(['']);
   const [isGroup, setIsGroup] = useState(false);
@@ -51,12 +53,20 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onChatCrea
     const validEmails = memberEmails.filter(email => email.trim() !== '');
     
     if (validEmails.length === 0) {
-      alert('Please add at least one member');
+      toast({
+        title: "Error",
+        description: "Please add at least one member",
+        variant: "destructive"
+      });
       return;
     }
 
     if (isGroup && !chatName.trim()) {
-      alert('Please enter a group name');
+      toast({
+        title: "Error",
+        description: "Please enter a group name",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -65,6 +75,10 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onChatCrea
       const finalChatName = isGroup ? chatName : validEmails[0];
       const chatId = await createChat(finalChatName, validEmails, isGroup);
       if (chatId) {
+        toast({
+          title: "Success",
+          description: "Chat created successfully!",
+        });
         onChatCreated(chatId);
         onClose();
         // Reset form
@@ -72,8 +86,13 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onChatCrea
         setMemberEmails(['']);
         setIsGroup(false);
       }
-    } catch (error) {
-      alert('Error creating chat. Please check the email addresses.');
+    } catch (error: any) {
+      console.error('Chat creation error:', error);
+      toast({
+        title: "Error creating chat",
+        description: error.message || "Please check the email addresses and try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }

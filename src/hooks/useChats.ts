@@ -178,18 +178,36 @@ export const useChats = () => {
     if (!user) return;
 
     try {
+      console.log('Creating chat with emails:', memberEmails);
+      
       // First, find user IDs for the provided emails
-      const { data: memberProfiles } = await supabase
+      const { data: memberProfiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, email')
         .in('email', memberEmails);
 
+      console.log('Found profiles:', memberProfiles);
+      console.log('Profile query error:', profileError);
+
+      if (profileError) {
+        console.error('Error finding user profiles:', profileError);
+        throw new Error('Error finding user profiles');
+      }
+
       if (!memberProfiles || memberProfiles.length === 0) {
-        throw new Error('No users found with provided emails');
+        throw new Error('No users found with the provided email addresses. Make sure the users have registered.');
+      }
+
+      // Check if all emails were found
+      const foundEmails = memberProfiles.map(profile => profile.email);
+      const notFoundEmails = memberEmails.filter(email => !foundEmails.includes(email));
+      
+      if (notFoundEmails.length > 0) {
+        throw new Error(`Users not found for emails: ${notFoundEmails.join(', ')}. Make sure they have registered.`);
       }
 
       // Create the chat
-      const { data: newChat } = await supabase
+      const { data: newChat, error: chatError } = await supabase
         .from('chats')
         .insert({
           name,
@@ -198,6 +216,14 @@ export const useChats = () => {
         })
         .select()
         .single();
+
+      console.log('Created chat:', newChat);
+      console.log('Chat creation error:', chatError);
+
+      if (chatError) {
+        console.error('Error creating chat:', chatError);
+        throw new Error('Failed to create chat');
+      }
 
       if (newChat) {
         // Add current user as member
@@ -209,7 +235,16 @@ export const useChats = () => {
           }))
         ];
 
-        await supabase.from('chat_members').insert(membersToAdd);
+        console.log('Adding members:', membersToAdd);
+
+        const { error: membersError } = await supabase
+          .from('chat_members')
+          .insert(membersToAdd);
+
+        if (membersError) {
+          console.error('Error adding chat members:', membersError);
+          throw new Error('Failed to add members to chat');
+        }
 
         // Reload chats
         await loadChats();
