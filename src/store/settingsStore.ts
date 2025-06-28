@@ -24,6 +24,7 @@ interface ChatSettings {
   chatBackup: boolean;
   fontSize: 'small' | 'medium' | 'large';
   chatTheme: 'default' | 'dark' | 'custom';
+  wallpaper: string; // URL or gradient string for chat wallpaper
 }
 
 interface AppearanceSettings {
@@ -42,6 +43,7 @@ interface SettingsState {
   updateNotifications: (settings: Partial<NotificationSettings>) => void;
   updateChat: (settings: Partial<ChatSettings>) => void;
   updateAppearance: (settings: Partial<AppearanceSettings>) => void;
+  setWallpaper: (wallpaper: string) => void;
   resetToDefaults: () => void;
 }
 
@@ -67,6 +69,7 @@ const defaultSettings: SettingsState = {
     chatBackup: false,
     fontSize: 'medium',
     chatTheme: 'default',
+    wallpaper: 'default', // Default gradient background
   },
   appearance: {
     darkMode: false,
@@ -78,6 +81,7 @@ const defaultSettings: SettingsState = {
   updateNotifications: () => {},
   updateChat: () => {},
   updateAppearance: () => {},
+  setWallpaper: () => {},
   resetToDefaults: () => {},
 };
 
@@ -97,9 +101,17 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           chat: { ...state.chat, ...settings },
         })),
-      updateAppearance: (settings) =>
+      updateAppearance: (settings) => {
+        console.log('Settings store: Updating appearance with:', settings);
+        set((state) => {
+          const newState = { appearance: { ...state.appearance, ...settings } };
+          console.log('Settings store: New state will be:', newState);
+          return newState;
+        });
+      },
+      setWallpaper: (wallpaper) =>
         set((state) => ({
-          appearance: { ...state.appearance, ...settings },
+          chat: { ...state.chat, wallpaper },
         })),
       resetToDefaults: () => set(defaultSettings),
     }),

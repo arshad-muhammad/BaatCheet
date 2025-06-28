@@ -152,63 +152,63 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-100 via-pink-100 via-purple-100 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-orange-400/20 to-pink-400/20 rounded-full animate-float"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-indigo-400/20 rounded-full animate-float-delayed"></div>
-        <div className="absolute bottom-32 left-32 w-28 h-28 bg-gradient-to-br from-pink-400/20 to-orange-400/20 rounded-full animate-float"></div>
-        <div className="absolute bottom-20 right-20 w-20 h-20 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full animate-float-delayed"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 dark:from-yellow-500/20 dark:to-amber-500/20 rounded-full animate-float"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-gradient-to-br from-amber-400/20 to-orange-400/20 dark:from-amber-500/20 dark:to-orange-500/20 rounded-full animate-float-delayed"></div>
+        <div className="absolute bottom-32 left-32 w-28 h-28 bg-gradient-to-br from-orange-400/20 to-red-400/20 dark:from-orange-500/20 dark:to-red-500/20 rounded-full animate-float"></div>
+        <div className="absolute bottom-20 right-20 w-20 h-20 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 dark:from-yellow-500/20 dark:to-amber-500/20 rounded-full animate-float-delayed"></div>
       </div>
       
-      <Card className="w-full max-w-md p-8 shadow-2xl border-0 bg-white/90 backdrop-blur-md relative z-10 animate-fade-in">
+      <Card className="w-full max-w-md p-8 shadow-2xl border-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md relative z-10 animate-fade-in">
         {showProfile ? (
           <>
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-400 via-pink-400 to-purple-400 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg animate-pulse">
+              <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 dark:from-yellow-500 dark:via-amber-500 dark:to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg animate-pulse">
                 <MessageCircle className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">Complete Your Profile</h2>
-              <p className="text-purple-600/80 mt-2 font-medium">Tell us a bit about yourself</p>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-yellow-600 via-amber-600 to-orange-600 dark:from-yellow-400 dark:via-amber-400 dark:to-orange-400 bg-clip-text text-transparent">Complete Your Profile</h2>
+              <p className="text-amber-600/80 dark:text-amber-400/80 mt-2 font-medium">Tell us a bit about yourself</p>
             </div>
             <div className="space-y-6">
               <div>
-                <Label htmlFor="name" className="text-purple-700 font-semibold">Full Name</Label>
+                <Label htmlFor="name" className="text-amber-700 dark:text-amber-300 font-semibold">Full Name</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
-                  className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                  className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                 />
               </div>
               <div>
-                <Label htmlFor="profile-pic" className="text-purple-700 font-semibold">Profile Picture (Optional)</Label>
+                <Label htmlFor="profile-pic" className="text-amber-700 dark:text-amber-300 font-semibold">Profile Picture (Optional)</Label>
                 <Input
                   id="profile-pic"
                   type="file"
                   accept="image/*"
                   onChange={e => setProfilePic(e.target.files?.[0] || null)}
-                  className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                  className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                 />
               </div>
               <div>
-                <Label htmlFor="status" className="text-purple-700 font-semibold">About / Status</Label>
+                <Label htmlFor="status" className="text-amber-700 dark:text-amber-300 font-semibold">About / Status</Label>
                 <Input
                   id="status"
                   value={status}
                   onChange={e => setStatus(e.target.value)}
                   placeholder="Available"
-                  className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                  className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                 />
               </div>
               {error && (
-                <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg border border-red-200 animate-shake">{error}</div>
+                <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-700 animate-shake">{error}</div>
               )}
               <Button
                 onClick={handleCompleteProfile}
                 disabled={!name.trim() || uploading}
-                className="w-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:from-orange-600 hover:via-pink-600 hover:to-purple-600 text-white py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:transform-none"
+                className="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-white py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:transform-none"
               >
                 {uploading ? (
                   <div className="flex items-center space-x-2">
@@ -223,7 +223,7 @@ const AuthPage = () => {
                 <Button
                   onClick={() => setShowProfile(false)}
                   variant="ghost"
-                  className="w-full text-purple-600 hover:text-purple-700 hover:bg-purple-50 font-medium transition-all duration-300"
+                  className="w-full text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-medium transition-all duration-300"
                 >
                   Back to Sign In
                 </Button>
@@ -233,25 +233,25 @@ const AuthPage = () => {
         ) : (
           <>
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-400 via-pink-400 to-purple-400 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg animate-pulse">
+              <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 dark:from-yellow-500 dark:via-amber-500 dark:to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg animate-pulse">
                 <MessageCircle className="w-10 h-10 text-white" />
               </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">Welcome</h1>
-              <p className="text-purple-600/80 mt-2 font-medium">Sign in to start messaging</p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 via-amber-600 to-orange-600 dark:from-yellow-400 dark:via-amber-400 dark:to-orange-400 bg-clip-text text-transparent">Welcome</h1>
+              <p className="text-amber-600/80 dark:text-amber-400/80 mt-2 font-medium">Sign in to start messaging</p>
             </div>
             
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-8 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-1 shadow-inner">
+              <TabsList className="grid w-full grid-cols-2 mb-8 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/50 dark:to-orange-900/50 rounded-xl p-1 shadow-inner">
                 <TabsTrigger 
                   value="signin" 
-                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-400 data-[state=active]:to-pink-400 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 font-semibold"
+                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-400 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 font-semibold"
                   onClick={() => setIsSignUp(false)}
                 >
                   Sign In
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup" 
-                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-400 data-[state=active]:to-purple-400 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 font-semibold"
+                  className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-400 data-[state=active]:to-orange-400 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 font-semibold"
                   onClick={() => setIsSignUp(true)}
                 >
                   Sign Up
@@ -260,34 +260,34 @@ const AuthPage = () => {
               
               <TabsContent value="signin" className="space-y-6">
                 <div>
-                  <Label htmlFor="email" className="text-purple-700 font-semibold">Email Address</Label>
+                  <Label htmlFor="email" className="text-amber-700 dark:text-amber-300 font-semibold">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                    className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password" className="text-purple-700 font-semibold">Password</Label>
+                  <Label htmlFor="password" className="text-amber-700 dark:text-amber-300 font-semibold">Password</Label>
                   <Input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                    className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                   />
                 </div>
                 {error && (
-                  <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg border border-red-200 animate-shake">{error}</div>
+                  <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-700 animate-shake">{error}</div>
                 )}
                 <Button
                   onClick={handleAuth}
                   disabled={!email || !password || loading}
-                  className="w-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:from-orange-600 hover:via-pink-600 hover:to-purple-600 text-white py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:transform-none"
+                  className="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-white py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:transform-none"
                 >
                   {loading ? (
                     <div className="flex items-center space-x-2">
@@ -302,34 +302,34 @@ const AuthPage = () => {
               
               <TabsContent value="signup" className="space-y-6">
                 <div>
-                  <Label htmlFor="signup-email" className="text-purple-700 font-semibold">Email Address</Label>
+                  <Label htmlFor="signup-email" className="text-amber-700 dark:text-amber-300 font-semibold">Email Address</Label>
                   <Input
                     id="signup-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                    className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="signup-password" className="text-purple-700 font-semibold">Password</Label>
+                  <Label htmlFor="signup-password" className="text-amber-700 dark:text-amber-300 font-semibold">Password</Label>
                   <Input
                     id="signup-password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Create a password (min 6 characters)"
-                    className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                    className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                   />
                 </div>
                 {error && (
-                  <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg border border-red-200 animate-shake">{error}</div>
+                  <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-700 animate-shake">{error}</div>
                 )}
                 <Button
                   onClick={handleAuth}
                   disabled={!email || !password || password.length < 6 || loading}
-                  className="w-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:from-orange-600 hover:via-pink-600 hover:to-purple-600 text-white py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:transform-none"
+                  className="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 text-white py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:transform-none"
                 >
                   {loading ? (
                     <div className="flex items-center space-x-2">

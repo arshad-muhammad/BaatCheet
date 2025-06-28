@@ -11,11 +11,15 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     const root = document.documentElement;
     
+    console.log('ThemeProvider: Dark mode state changed to:', appearance.darkMode);
+    
     // Apply dark mode
     if (appearance.darkMode) {
       root.classList.add('dark');
+      console.log('ThemeProvider: Added dark class to root');
     } else {
       root.classList.remove('dark');
+      console.log('ThemeProvider: Removed dark class from root');
     }
 
     // Apply accent color

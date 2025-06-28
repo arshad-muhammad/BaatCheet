@@ -93,10 +93,33 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
   const filteredChats = chats.filter(chat =>
     chat.isGroup ||
     !sentInv.some(inv => inv.id === chat.id && inv.status !== 'accepted')
-  ).filter(chat =>
-    chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    chat.lastMessage?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).filter(chat => {
+    const query = searchQuery?.toLowerCase().trim() || '';
+    if (!query) return true; // Show all chats if no search query
+    
+    const chatName = chat.name?.toLowerCase() || '';
+    const lastMessage = chat.lastMessage?.toLowerCase() || '';
+    
+    // For 1:1 chats, also search through the display name that's shown to users
+    let displayName = chatName;
+    if (!chat.isGroup && usersById[chat.otherUserId]) {
+      const otherUser = usersById[chat.otherUserId];
+      displayName = (otherUser.name || otherUser.phone || chat.otherUserName || chat.otherUserId || '').toLowerCase();
+    }
+    
+    // Also check otherUserName directly
+    const otherUserName = chat.otherUserName?.toLowerCase() || '';
+    
+    // Search in multiple fields with partial matching
+    const searchFields = [
+      chatName,
+      lastMessage,
+      displayName,
+      otherUserName
+    ];
+    
+    return searchFields.some(field => field.includes(query));
+  });
 
   const sortedChats = [...filteredChats].sort((a, b) => {
     const aTime = a.lastMessageTime ? a.lastMessageTime.getTime() : 0;
@@ -135,14 +158,47 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
   });
 
   console.log('=== CHATLIST RENDER DEBUG ===');
+  console.log('Search query:', searchQuery);
+  console.log('Search query trimmed:', searchQuery?.toLowerCase().trim());
   console.log('All received invitations:', receivedInv);
   console.log('All sent invitations:', sentInv);
   console.log('Pending received invitations:', pendingReceivedInv);
   console.log('Pending sent invitations:', pendingSentInv);
   console.log('Users by ID:', usersById);
   console.log('Current user object:', user);
+  console.log('All chats before filtering:', chats);
   console.log('Filtered chats:', filteredChats);
   console.log('Sorted chats:', sortedChats);
+  
+  // Debug search for each chat
+  if (searchQuery) {
+    console.log('=== SEARCH DEBUG FOR EACH CHAT ===');
+    chats.forEach((chat, index) => {
+      const query = searchQuery.toLowerCase().trim();
+      const chatName = chat.name?.toLowerCase() || '';
+      const lastMessage = chat.lastMessage?.toLowerCase() || '';
+      let displayName = chatName;
+      if (!chat.isGroup && usersById[chat.otherUserId]) {
+        const otherUser = usersById[chat.otherUserId];
+        displayName = (otherUser.name || otherUser.phone || chat.otherUserName || chat.otherUserId || '').toLowerCase();
+      }
+      const otherUserName = chat.otherUserName?.toLowerCase() || '';
+      
+      const searchFields = [chatName, lastMessage, displayName, otherUserName];
+      const matches = searchFields.some(field => field.includes(query));
+      
+      console.log(`Chat ${index}:`, {
+        id: chat.id,
+        name: chat.name,
+        displayName,
+        otherUserName,
+        lastMessage: chat.lastMessage,
+        searchFields,
+        query,
+        matches
+      });
+    });
+  }
 
   const handleDeleteChat = async () => {
     if (!chatToDelete || !user?.id) return;
@@ -154,6 +210,15 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
 
   return (
     <div className="divide-y divide-orange-200/30">
+      {/* Search Debug Info */}
+      {searchQuery && (
+        <div className="px-4 py-2 bg-blue-50/50 border-b border-blue-200/50">
+          <div className="text-xs text-blue-600 font-medium">
+            Searching for: "{searchQuery}" • Found {filteredChats.length} chats
+          </div>
+        </div>
+      )}
+      
       {/* Received Invitations */}
       {pendingReceivedInv.length > 0 && (
         <div className="bg-gradient-to-r from-yellow-50/80 to-orange-50/80 border-b border-yellow-200/50">

@@ -1,3 +1,6 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -44,6 +47,12 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
   }
 
   .dark {
@@ -82,6 +91,12 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -159,6 +174,58 @@
   .animate-desi-float-delayed {
     animation: desiFloat 4s ease-in-out infinite;
     animation-delay: 1.5s;
+  }
+
+  /* Custom Typography for Desi Fusion Style */
+  .font-display {
+    font-family: 'Dancing Script', cursive;
+  }
+  
+  .font-heading {
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .font-elegant {
+    font-family: 'Playfair Display', serif;
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+  }
+  
+  .font-weight-light {
+    font-weight: 300;
+  }
+  
+  .font-weight-normal {
+    font-weight: 400;
+  }
+  
+  .font-weight-medium {
+    font-weight: 500;
+  }
+  
+  .font-weight-semibold {
+    font-weight: 600;
+  }
+  
+  .font-weight-bold {
+    font-weight: 700;
+  }
+  
+  .font-weight-extrabold {
+    font-weight: 800;
   }
 }
 
@@ -371,4 +438,118 @@
 
 .desi-card:hover::after {
   opacity: 1;
+}
+
+/* Golden Yellow Theme Colors */
+.bg-golden-gradient {
+  background: linear-gradient(135deg, #fef3c7, #fde68a, #fcd34d, #fbbf24, #f59e0b);
+}
+
+.bg-golden-gradient-dark {
+  background: linear-gradient(135deg, #92400e, #a16207, #ca8a04, #eab308, #f59e0b);
+}
+
+.text-golden {
+  color: #f59e0b;
+}
+
+.dark .text-golden {
+  color: #fbbf24;
+}
+
+.border-golden {
+  border-color: #f59e0b;
+}
+
+.dark .border-golden {
+  border-color: #fbbf24;
+}
+
+/* Enhanced Dark Mode Support */
+.dark {
+  color-scheme: dark;
+}
+
+.dark * {
+  border-color: rgba(75, 85, 99, 0.5);
+}
+
+.dark input, .dark textarea {
+  background-color: rgba(55, 65, 81, 0.8);
+  color: #f3f4f6;
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Dark Mode Toggle Specific Styles */
+.dark-mode-toggle {
+  transition: all 0.3s ease;
+}
+
+.dark-mode-toggle[data-state="checked"] {
+  background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+}
+
+.dark-mode-toggle[data-state="unchecked"] {
+  background: #d1d5db !important;
+}
+
+.dark .dark-mode-toggle[data-state="unchecked"] {
+  background: #4b5563 !important;
+}
+
+/* Ensure dark mode classes are applied properly */
+.dark {
+  color-scheme: dark;
+}
+
+.dark * {
+  color-scheme: dark;
+}
+
+.dark input, .dark textarea {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Enhanced Typography for Headers */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+/* Body text styling */
+body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Special decorative text */
+.decorative-text {
+  font-family: 'Dancing Script', cursive;
+  font-weight: 600;
+}
+
+/* Elegant serif for special content */
+.elegant-text {
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
 }

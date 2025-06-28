@@ -24,7 +24,7 @@ const Header = () => {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold desi-gradient-text">
+              <h1 className="text-2xl font-heading font-bold desi-gradient-text">
                 BaatCheet
               </h1>
               <p className="text-xs text-orange-600/70 font-medium animate-desi-fade">Connect & Share</p>

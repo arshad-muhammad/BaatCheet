@@ -68,29 +68,29 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-100 via-pink-100 via-purple-100 to-indigo-100 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-orange-400/20 to-pink-400/20 rounded-full animate-float"></div>
-        <div className="absolute top-40 right-32 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-indigo-400/20 rounded-full animate-float-delayed"></div>
-        <div className="absolute bottom-32 left-32 w-28 h-28 bg-gradient-to-br from-pink-400/20 to-orange-400/20 rounded-full animate-float"></div>
-        <div className="absolute bottom-20 right-20 w-20 h-20 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full animate-float-delayed"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 dark:from-yellow-500/20 dark:to-amber-500/20 rounded-full animate-float"></div>
+        <div className="absolute top-40 right-32 w-24 h-24 bg-gradient-to-br from-amber-400/20 to-orange-400/20 dark:from-amber-500/20 dark:to-orange-500/20 rounded-full animate-float-delayed"></div>
+        <div className="absolute bottom-32 left-32 w-28 h-28 bg-gradient-to-br from-orange-400/20 to-red-400/20 dark:from-orange-500/20 dark:to-red-500/20 rounded-full animate-float"></div>
+        <div className="absolute bottom-20 right-20 w-20 h-20 bg-gradient-to-br from-yellow-400/20 to-amber-400/20 dark:from-yellow-500/20 dark:to-amber-500/20 rounded-full animate-float-delayed"></div>
       </div>
       
-      <div className="max-w-md mx-auto bg-white/90 backdrop-blur-md shadow-2xl min-h-screen relative z-10">
+      <div className="max-w-md mx-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-2xl min-h-screen relative z-10">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-50/90 via-pink-50/90 to-purple-50/90 backdrop-blur-md border-b border-purple-200/50 p-4">
+        <div className="bg-gradient-to-r from-yellow-100/95 via-amber-100/95 to-orange-100/95 dark:from-gray-800/95 dark:via-gray-700/95 dark:to-gray-800/95 backdrop-blur-md border-b border-yellow-200/50 dark:border-gray-600/50 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
-                className="p-2 hover:bg-gradient-to-r hover:from-orange-100 hover:to-pink-100 rounded-xl transition-all duration-300 hover:scale-110"
+                className="p-2 hover:bg-yellow-200/50 dark:hover:bg-gray-600/50 rounded-xl transition-all duration-300 hover:scale-110"
               >
-                <ArrowLeft className="w-5 h-5 text-purple-600" />
+                <ArrowLeft className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
               </Button>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">Profile</h1>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-600 via-amber-600 to-orange-600 dark:from-yellow-400 dark:via-amber-400 dark:to-orange-400 bg-clip-text text-transparent">Profile</h1>
             </div>
             
             {isEditing ? (
@@ -99,17 +99,17 @@ const ProfilePage = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleCancel}
-                  className="p-2 hover:bg-gradient-to-r hover:from-red-100 hover:to-pink-100 rounded-xl transition-all duration-300 hover:scale-110"
+                  className="p-2 hover:bg-red-100/50 dark:hover:bg-red-900/50 rounded-xl transition-all duration-300 hover:scale-110"
                 >
-                  <X className="w-5 h-5 text-red-500" />
+                  <X className="w-5 h-5 text-red-500 dark:text-red-400" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleSave}
-                  className="p-2 hover:bg-gradient-to-r hover:from-green-100 hover:to-emerald-100 rounded-xl transition-all duration-300 hover:scale-110"
+                  className="p-2 hover:bg-green-100/50 dark:hover:bg-green-900/50 rounded-xl transition-all duration-300 hover:scale-110"
                 >
-                  <Check className="w-5 h-5 text-green-500" />
+                  <Check className="w-5 h-5 text-green-500 dark:text-green-400" />
                 </Button>
               </div>
             ) : (
@@ -117,20 +117,20 @@ const ProfilePage = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsEditing(true)}
-                className="p-2 hover:bg-gradient-to-r hover:from-blue-100 hover:to-purple-100 rounded-xl transition-all duration-300 hover:scale-110"
+                className="p-2 hover:bg-amber-200/50 dark:hover:bg-amber-900/50 rounded-xl transition-all duration-300 hover:scale-110"
               >
-                <Edit2 className="w-5 h-5 text-purple-500" />
+                <Edit2 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </Button>
             )}
           </div>
         </div>
 
         {/* Profile Picture */}
-        <div className="p-8 text-center border-b border-purple-200/50 bg-gradient-to-r from-purple-50/50 to-pink-50/50">
+        <div className="p-8 text-center border-b border-yellow-200/50 dark:border-gray-600/50 bg-gradient-to-r from-yellow-50/50 to-amber-50/50 dark:from-gray-700/50 dark:to-gray-600/50">
           <div className="relative inline-block group">
-            <Avatar className="w-32 h-32 mx-auto ring-4 ring-purple-200 hover:ring-pink-300 transition-all duration-300 group-hover:scale-105 shadow-xl">
+            <Avatar className="w-32 h-32 mx-auto ring-4 ring-yellow-200 dark:ring-yellow-600 hover:ring-amber-300 dark:hover:ring-amber-400 transition-all duration-300 group-hover:scale-105 shadow-xl">
               <AvatarImage src={profilePic ? URL.createObjectURL(profilePic) : user?.photoURL || user?.avatar} />
-              <AvatarFallback className="bg-gradient-to-br from-orange-400 via-pink-400 to-purple-400 text-white text-4xl font-bold">
+              <AvatarFallback className="bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 dark:from-yellow-500 dark:via-amber-500 dark:to-orange-500 text-white text-4xl font-bold">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
@@ -138,7 +138,7 @@ const ProfilePage = () => {
               <>
                 <Button
                   size="sm"
-                  className="absolute bottom-0 right-0 w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:from-orange-600 hover:via-pink-600 hover:to-purple-600 shadow-lg transition-all duration-300 hover:scale-110"
+                  className="absolute bottom-0 right-0 w-12 h-12 rounded-full bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 hover:from-yellow-600 hover:via-amber-600 hover:to-orange-600 shadow-lg transition-all duration-300 hover:scale-110"
                   asChild
                 >
                   <label htmlFor="profile-pic-input">
@@ -159,9 +159,9 @@ const ProfilePage = () => {
         </div>
 
         {/* Profile Info */}
-        <div className="p-6 space-y-6 bg-white/80">
+        <div className="p-6 space-y-6 bg-white/80 dark:bg-gray-700/80">
           <div>
-            <Label htmlFor="name" className="text-sm font-semibold text-purple-700">
+            <Label htmlFor="name" className="text-sm font-semibold text-amber-700 dark:text-amber-300">
               Name
             </Label>
             {isEditing ? (
@@ -169,16 +169,16 @@ const ProfilePage = () => {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-600/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                 disabled={uploading}
               />
             ) : (
-              <p className="mt-2 text-lg font-semibold text-purple-800">{user?.name || 'Not set'}</p>
+              <p className="mt-2 text-lg font-semibold text-amber-800 dark:text-amber-200">{user?.name || 'Not set'}</p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="status" className="text-sm font-semibold text-purple-700">
+            <Label htmlFor="status" className="text-sm font-semibold text-amber-700 dark:text-amber-300">
               Status
             </Label>
             {isEditing ? (
@@ -187,52 +187,52 @@ const ProfilePage = () => {
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 placeholder="Available"
-                className="mt-2 border-purple-200 focus:border-pink-400 focus:ring-pink-400 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
+                className="mt-2 border-amber-200 dark:border-amber-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-600/80 backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                 disabled={uploading}
               />
             ) : (
-              <p className="mt-2 text-purple-600 font-medium">{user?.status || 'Available'}</p>
+              <p className="mt-2 text-amber-600 dark:text-amber-400 font-medium">{user?.status || 'Available'}</p>
             )}
           </div>
 
           <div>
-            <Label className="text-sm font-semibold text-purple-700">
+            <Label className="text-sm font-semibold text-amber-700 dark:text-amber-300">
               Phone
             </Label>
-            <p className="mt-2 text-purple-600 font-medium">{user?.phone || 'Not set'}</p>
+            <p className="mt-2 text-amber-600 dark:text-amber-400 font-medium">{user?.phone || 'Not set'}</p>
           </div>
 
           <div>
-            <Label className="text-sm font-semibold text-purple-700">
+            <Label className="text-sm font-semibold text-amber-700 dark:text-amber-300">
               Email
             </Label>
-            <p className="mt-2 text-purple-600 font-medium">{user?.email || 'Not set'}</p>
+            <p className="mt-2 text-amber-600 dark:text-amber-400 font-medium">{user?.email || 'Not set'}</p>
           </div>
         </div>
 
         {/* Privacy Settings */}
-        <div className="p-6 border-t border-purple-200/50 bg-gradient-to-r from-purple-50/30 to-pink-50/30">
-          <h3 className="text-lg font-bold bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">Privacy</h3>
+        <div className="p-6 border-t border-yellow-200/50 dark:border-gray-600/50 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-gray-600/30 dark:to-gray-500/30">
+          <h3 className="text-lg font-bold bg-gradient-to-r from-yellow-600 via-amber-600 to-orange-600 dark:from-yellow-400 dark:via-amber-400 dark:to-orange-400 bg-clip-text text-transparent mb-4">Privacy</h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-purple-200/50 hover:shadow-md transition-all duration-300">
-              <span className="text-purple-700 font-medium">Last Seen</span>
-              <span className="text-sm text-purple-500 font-medium">Everyone</span>
+            <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl border border-yellow-200/50 dark:border-gray-600/50 hover:shadow-md transition-all duration-300">
+              <span className="text-amber-700 dark:text-amber-300 font-medium">Last Seen</span>
+              <span className="text-sm text-amber-500 dark:text-amber-400 font-medium">Everyone</span>
             </div>
-            <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-purple-200/50 hover:shadow-md transition-all duration-300">
-              <span className="text-purple-700 font-medium">Profile Photo</span>
-              <span className="text-sm text-purple-500 font-medium">My Contacts</span>
+            <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl border border-yellow-200/50 dark:border-gray-600/50 hover:shadow-md transition-all duration-300">
+              <span className="text-amber-700 dark:text-amber-300 font-medium">Profile Photo</span>
+              <span className="text-sm text-amber-500 dark:text-amber-400 font-medium">My Contacts</span>
             </div>
-            <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-purple-200/50 hover:shadow-md transition-all duration-300">
-              <span className="text-purple-700 font-medium">Status</span>
-              <span className="text-sm text-purple-500 font-medium">My Contacts</span>
+            <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl border border-yellow-200/50 dark:border-gray-600/50 hover:shadow-md transition-all duration-300">
+              <span className="text-amber-700 dark:text-amber-300 font-medium">Status</span>
+              <span className="text-sm text-amber-500 dark:text-amber-400 font-medium">My Contacts</span>
             </div>
           </div>
         </div>
 
         {/* Error and Logout */}
-        <div className="p-6 border-t border-purple-200/50 flex flex-col items-center bg-gradient-to-r from-red-50/50 to-pink-50/50">
+        <div className="p-6 border-t border-yellow-200/50 dark:border-gray-600/50 flex flex-col items-center bg-gradient-to-r from-red-50/50 to-pink-50/50 dark:from-red-900/30 dark:to-pink-900/30">
           {error && (
-            <div className="text-red-500 text-sm mb-4 bg-red-50 p-3 rounded-lg border border-red-200 animate-shake w-full text-center">{error}</div>
+            <div className="text-red-500 dark:text-red-400 text-sm mb-4 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-700 animate-shake w-full text-center">{error}</div>
           )}
           <Button 
             onClick={handleLogout} 

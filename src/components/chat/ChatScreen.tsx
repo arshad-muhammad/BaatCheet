@@ -6,8 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
 import { useCallStore } from '../../store/callStore';
-import { ArrowLeft, Phone, Video, Settings, Send, Mic, Camera, File, Smile, Paperclip, Image as ImageIcon } from 'lucide-react';
+import { useSettingsStore } from '../../store/settingsStore';
+import { ArrowLeft, Phone, Video, Settings, Send, Mic, Camera, File, Smile, Paperclip, Image as ImageIcon, MoreVertical, MessageCircle, Palette } from 'lucide-react';
 import MessageBubble from './MessageBubble';
+import WallpaperPicker from './WallpaperPicker';
 import { formatDistanceToNow } from 'date-fns';
 import { db, storage } from '../../lib/firebase';
 import { ref as dbRef, push, onChildAdded } from 'firebase/database';
@@ -54,6 +56,7 @@ const ChatScreen = () => {
   const { chats, messages, addMessage } = useChatStore();
   const { user } = useAuthStore();
   const { addCall, updateCallDuration, updateCallStatus } = useCallStore();
+  const { chat: chatSettings, updateChat } = useSettingsStore();
   const [newMessage, setNewMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [firebaseMessages, setFirebaseMessages] = useState<Message[]>([]);
@@ -92,9 +95,34 @@ const ChatScreen = () => {
   const peerSetupRef = useRef(false);
   const [currentCallId, setCurrentCallId] = useState<string | null>(null);
   const callStartTimeRef = useRef<number | null>(null);
+  const [showWallpaperPicker, setShowWallpaperPicker] = useState(false);
 
   const chat = chats.find(c => c.id === id);
   const chatMessages = messages[id || ''] || [];
+
+  // Get wallpaper style
+  const getWallpaperStyle = () => {
+    if (!chatSettings?.wallpaper || chatSettings.wallpaper === 'default') {
+      return 'bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900';
+    }
+    if (chatSettings.wallpaper.startsWith('bg-')) {
+      return chatSettings.wallpaper;
+    }
+    return 'bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900';
+  };
+
+  // Get wallpaper inline style for custom images
+  const getWallpaperInlineStyle = () => {
+    if (chatSettings?.wallpaper && (chatSettings.wallpaper.startsWith('data:') || chatSettings.wallpaper.startsWith('http'))) {
+      return {
+        backgroundImage: `url('${chatSettings.wallpaper}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+    }
+    return {};
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -328,7 +356,7 @@ const ChatScreen = () => {
 
   if (!chat) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-medium text-gray-600">Chat not found</h2>
           <Button onClick={() => navigate('/')} className="mt-4">
@@ -700,33 +728,33 @@ const ChatScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-100 via-pink-50 to-purple-100 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full opacity-15 animate-desi-float"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-pink-400 to-red-400 rounded-full opacity-10 animate-desi-bounce"></div>
-        <div className="absolute bottom-32 left-20 w-20 h-20 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full opacity-20 animate-desi-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-28 h-28 bg-gradient-to-r from-green-400 to-teal-400 rounded-full opacity-15 animate-desi-float-delayed"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-yellow-400 to-amber-400 dark:from-yellow-500/20 dark:to-amber-500/20 rounded-full opacity-15 animate-desi-float"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-amber-400 to-orange-400 dark:from-amber-500/20 dark:to-orange-500/20 rounded-full opacity-10 animate-desi-bounce"></div>
+        <div className="absolute bottom-32 left-20 w-20 h-20 bg-gradient-to-r from-orange-400 to-red-400 dark:from-orange-500/20 dark:to-red-500/20 rounded-full opacity-20 animate-desi-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-28 h-28 bg-gradient-to-r from-yellow-400 to-amber-400 dark:from-yellow-500/20 dark:to-amber-500/20 rounded-full opacity-15 animate-desi-float-delayed"></div>
       </div>
       
-      <div className="max-w-md mx-auto bg-white/90 backdrop-blur-md shadow-2xl min-h-screen flex flex-col relative z-10 border-l border-r border-white/20">
+      <div className="max-w-md mx-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-2xl min-h-screen flex flex-col relative z-10 border-l border-r border-white/20 dark:border-gray-700/20">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-100/95 via-pink-100/95 to-purple-100/95 backdrop-blur-md border-b border-orange-200/50 p-4 shadow-lg">
+        <div className="bg-gradient-to-r from-yellow-100/95 via-amber-100/95 to-orange-100/95 dark:from-gray-800/95 dark:via-gray-700/95 dark:to-gray-800/95 backdrop-blur-md border-b border-yellow-200/50 dark:border-gray-600/50 p-4 shadow-lg">
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="p-2 hover:bg-orange-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
+              className="p-2 hover:bg-yellow-200/50 dark:hover:bg-gray-600/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
             >
-              <ArrowLeft className="w-5 h-5 text-orange-600" />
+              <ArrowLeft className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
             </Button>
 
             <div className="flex items-center space-x-3 flex-1">
               <div className="relative group">
-                <Avatar className="w-12 h-12 ring-2 ring-orange-200 hover:ring-pink-300 transition-all duration-300 group-hover:scale-110 shadow-lg">
+                <Avatar className="w-12 h-12 ring-2 ring-yellow-200 dark:ring-yellow-600 hover:ring-amber-300 dark:hover:ring-amber-400 transition-all duration-300 group-hover:scale-110 shadow-lg">
                   <AvatarImage src={displayAvatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-orange-400 via-pink-400 to-purple-400 text-white font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 dark:from-yellow-500 dark:via-amber-500 dark:to-orange-500 text-white font-bold">
                     {(displayName || '').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -736,8 +764,8 @@ const ChatScreen = () => {
               </div>
 
               <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-orange-800 truncate text-lg">{displayName || 'Unknown'}</h2>
-                <p className="text-sm text-orange-600/80 font-medium">
+                <h2 className="font-bold text-yellow-800 dark:text-yellow-200 truncate text-lg">{displayName || 'Unknown'}</h2>
+                <p className="text-sm text-yellow-600/80 dark:text-yellow-400/80 font-medium">
                   {chat.isGroup 
                     ? `${chat.members?.length || 0} members`
                     : chat.isOnline 
@@ -772,6 +800,15 @@ const ChatScreen = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
+                className="p-3 hover:bg-purple-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
+                onClick={() => setShowWallpaperPicker(true)}
+                title="Change wallpaper"
+              >
+                <Palette className="w-5 h-5 text-purple-600" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
                 className="p-3 hover:bg-pink-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
               >
                 <Settings className="w-5 h-5 text-pink-600" />
@@ -781,7 +818,15 @@ const ChatScreen = () => {
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-orange-50/30 via-pink-50/30 to-purple-50/30">
+        <div 
+          className={`flex-1 overflow-y-auto p-4 space-y-4 ${getWallpaperStyle()}`}
+          style={chatSettings?.wallpaper && (chatSettings.wallpaper.startsWith('data:') || chatSettings.wallpaper.startsWith('http')) ? {
+            backgroundImage: `url('${chatSettings.wallpaper}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          } : {}}
+        >
           {firebaseMessages.map((message) => (
             <MessageBubble
               key={message.id}
@@ -795,30 +840,30 @@ const ChatScreen = () => {
         </div>
 
         {/* Input Area */}
-        <div className="bg-gradient-to-r from-orange-100/95 via-pink-100/95 to-purple-100/95 backdrop-blur-md border-t border-orange-200/50 p-4 shadow-lg">
+        <div className="bg-gradient-to-r from-yellow-100/95 via-amber-100/95 to-orange-100/95 dark:from-gray-800/95 dark:via-gray-700/95 dark:to-gray-800/95 backdrop-blur-md border-t border-yellow-200/50 dark:border-gray-600/50 p-4 shadow-lg">
           <div className="flex items-center space-x-3">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-3 hover:bg-yellow-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
+              className="p-3 hover:bg-yellow-200/50 dark:hover:bg-gray-600/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
               onClick={() => setShowEmojiPicker(v => !v)}
             >
-              <Smile className="w-5 h-5 text-yellow-600" />
+              <Smile className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
             </Button>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="p-3 hover:bg-pink-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
+              className="p-3 hover:bg-pink-200/50 dark:hover:bg-gray-600/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
               onClick={() => setShowGifPicker(v => !v)}
             >
-              <ImageIcon className="w-5 h-5 text-pink-600" />
+              <ImageIcon className="w-5 h-5 text-pink-600 dark:text-pink-400" />
             </Button>
             <label className="p-3 hover:bg-purple-200/50 rounded-xl cursor-pointer transition-all duration-300 hover:scale-110 desi-button-hover">
-              <Paperclip className="w-5 h-5 text-purple-600" />
+              <Paperclip className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               <input type="file" className="hidden" onChange={handleFileChange} disabled={isUploadingFile} />
             </label>
             {isUploadingFile && (
-              <span className="ml-2 text-xs text-orange-600 font-medium animate-desi-pulse">Uploading...</span>
+              <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-400 font-medium animate-desi-pulse">Uploading...</span>
             )}
             <div className="flex-1 relative">
               <Input
@@ -827,7 +872,7 @@ const ChatScreen = () => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
-                className="pr-12 border-2 border-orange-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 rounded-2xl bg-white/80 backdrop-blur-sm transition-all duration-300 hover:border-orange-300 focus:bg-white shadow-lg desi-button-hover"
+                className="pr-12 border-2 border-yellow-200 dark:border-yellow-600 focus:border-orange-400 dark:focus:border-orange-400 focus:ring-orange-400 dark:focus:ring-orange-400 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm transition-all duration-300 hover:border-yellow-300 focus:bg-white dark:focus:bg-gray-600 shadow-lg desi-button-hover"
               />
             </div>
             {newMessage.trim() ? (
@@ -841,14 +886,14 @@ const ChatScreen = () => {
               <Button
                 onClick={handleOpenRecorder}
                 disabled={isUploadingAudio}
-                className="rounded-full p-3 transition-all duration-300 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 hover:scale-110 shadow-lg desi-button-hover"
+                className="rounded-full p-3 transition-all duration-300 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 hover:scale-110 shadow-lg desi-button-hover"
               >
                 <Mic className="w-5 h-5" />
               </Button>
             )}
           </div>
           {showEmojiPicker && (
-            <div className="absolute bottom-20 left-4 z-50 bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl p-3 border border-orange-200/50">
+            <div className="absolute bottom-20 left-4 z-50 bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl p-3 border border-yellow-200/50 dark:border-yellow-600/50">
               {isMounted && (
                 <EmojiPicker
                   onEmojiClick={handleEmojiClick}
@@ -886,14 +931,20 @@ const ChatScreen = () => {
           )}
         </div>
       </div>
+
+      {/* Wallpaper Picker Dialog */}
+      <WallpaperPicker 
+        open={showWallpaperPicker} 
+        onOpenChange={setShowWallpaperPicker} 
+      />
       
       {/* Voice Recorder Dialog */}
       <Dialog open={showRecorder} onOpenChange={setShowRecorder}>
-        <DialogContent className="max-w-xs w-full flex flex-col items-center space-y-4 bg-white/95 backdrop-blur-md border border-orange-200/50">
-          <DialogTitle className="text-orange-800 font-bold">Voice Message</DialogTitle>
-          <DialogDescription className="text-orange-600">Record and send a voice message.</DialogDescription>
+        <DialogContent className="max-w-xs w-full flex flex-col items-center space-y-4 bg-white/95 backdrop-blur-md border border-yellow-200/50 dark:border-yellow-600/50">
+          <DialogTitle className="text-yellow-800 dark:text-yellow-200 font-bold">Voice Message</DialogTitle>
+          <DialogDescription className="text-yellow-600 dark:text-yellow-400">Record and send a voice message.</DialogDescription>
           <div className="text-center">
-            <div className="text-2xl font-mono mb-4 text-orange-700 font-bold">{`${Math.floor(recordingTime/60).toString().padStart(2,'0')}:${(recordingTime%60).toString().padStart(2,'0')}`}</div>
+            <div className="text-2xl font-mono mb-4 text-yellow-700 dark:text-yellow-300 font-bold">{`${Math.floor(recordingTime/60).toString().padStart(2,'0')}:${(recordingTime%60).toString().padStart(2,'0')}`}</div>
             {recorderState === 'idle' && (
               <Button onClick={handleStartRecording} className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto shadow-lg desi-button-hover">
                 <Mic className="w-8 h-8 text-white" />
@@ -904,7 +955,7 @@ const ChatScreen = () => {
                 <Button onClick={handlePauseRecording} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto animate-desi-pulse shadow-lg desi-button-hover">
                   <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" /></svg>
                 </Button>
-                <Button onClick={handleStopRecording} variant="outline" className="mt-2 border-2 border-orange-200 text-orange-700 hover:bg-orange-50 font-bold">Stop</Button>
+                <Button onClick={handleStopRecording} variant="outline" className="mt-2 border-2 border-yellow-200 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 font-bold">Stop</Button>
               </div>
             )}
             {recorderState === 'paused' && (
@@ -912,7 +963,7 @@ const ChatScreen = () => {
                 <Button onClick={handleResumeRecording} className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto shadow-lg desi-button-hover">
                   <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor" /></svg>
                 </Button>
-                <Button onClick={handleStopRecording} variant="outline" className="mt-2 border-2 border-orange-200 text-orange-700 hover:bg-orange-50 font-bold">Stop</Button>
+                <Button onClick={handleStopRecording} variant="outline" className="mt-2 border-2 border-yellow-200 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 font-bold">Stop</Button>
               </div>
             )}
           </div>
@@ -929,9 +980,9 @@ const ChatScreen = () => {
       
       {/* Call Dialog */}
       <CallDialog open={callDialogOpen} onOpenChange={setCallDialogOpen}>
-        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full bg-white/95 backdrop-blur-md border border-orange-200/50">
-          <CallDialogTitle className="text-orange-800 font-bold">{callType === 'video' ? 'Video Call' : 'Voice Call'}</CallDialogTitle>
-          <CallDialogDescription className="text-orange-600">
+        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full bg-white/95 backdrop-blur-md border border-yellow-200/50 dark:border-yellow-600/50">
+          <CallDialogTitle className="text-yellow-800 dark:text-yellow-200 font-bold">{callType === 'video' ? 'Video Call' : 'Voice Call'}</CallDialogTitle>
+          <CallDialogDescription className="text-yellow-600 dark:text-yellow-400">
             {callStatus === 'connecting' && 'Connecting...'}
             {callStatus === 'connected' && (callType === 'video' ? 'Video call in progress' : 'Voice call in progress')}
             {callStatus === 'failed' && 'Call failed'}
@@ -943,18 +994,18 @@ const ChatScreen = () => {
             <div className="flex flex-col items-center space-y-2 w-full">
               {callType === 'video' ? (
                 <>
-                  <video ref={localVideoRef} autoPlay muted playsInline className="w-32 h-32 bg-black rounded-2xl border-2 border-orange-200 shadow-lg" />
+                  <video ref={localVideoRef} autoPlay muted playsInline className="w-32 h-32 bg-black rounded-2xl border-2 border-yellow-200 dark:border-yellow-600 shadow-lg" />
                   <video ref={remoteVideoRef} autoPlay playsInline className="w-48 h-48 bg-black rounded-2xl border-2 border-pink-200 shadow-lg" />
                 </>
               ) : (
                 <>
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-100 to-pink-100 flex items-center justify-center mb-2 shadow-lg border-2 border-orange-200">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-100 to-amber-100 flex items-center justify-center mb-2 shadow-lg border-2 border-yellow-200 dark:border-yellow-600">
                     <Phone className="w-10 h-10 text-green-600" />
                   </div>
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center mb-2 shadow-lg border-2 border-pink-200">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center mb-2 shadow-lg border-2 border-amber-200 dark:border-amber-600">
                     <Avatar className="w-16 h-16 ring-2 ring-white">
                       <AvatarImage src={displayAvatar} />
-                      <AvatarFallback className="bg-gradient-to-br from-pink-400 to-purple-400 text-white font-bold">{(displayName || '').charAt(0).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-400 text-white font-bold">{(displayName || '').charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </div>
                 </>
@@ -962,8 +1013,8 @@ const ChatScreen = () => {
             </div>
             {callStatus === 'connecting' && (
               <div className="mt-4 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-                <p className="text-sm text-orange-600 mt-2 font-medium">Connecting to {displayName}...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mx-auto"></div>
+                <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-2 font-medium">Connecting to {displayName}...</p>
               </div>
             )}
             <Button onClick={handleEndCall} className="mt-4 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold shadow-lg desi-button-hover">End Call</Button>
@@ -973,9 +1024,9 @@ const ChatScreen = () => {
       
       {/* Incoming Call Dialog */}
       <CallDialog open={incomingCallDialogOpen} onOpenChange={setIncomingCallDialogOpen}>
-        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full bg-white/95 backdrop-blur-md border border-orange-200/50">
-          <CallDialogTitle className="text-orange-800 font-bold">Incoming {callType === 'video' ? 'Video' : 'Voice'} Call</CallDialogTitle>
-          <CallDialogDescription className="text-orange-600">
+        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full bg-white/95 backdrop-blur-md border border-yellow-200/50">
+          <CallDialogTitle className="text-yellow-800 dark:text-yellow-200 font-bold">Incoming {callType === 'video' ? 'Video' : 'Voice'} Call</CallDialogTitle>
+          <CallDialogDescription className="text-yellow-600 dark:text-yellow-400">
             {displayName} is calling you...
           </CallDialogDescription>
           <div className="w-full flex flex-col items-center space-y-4">

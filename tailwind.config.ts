@@ -18,6 +18,13 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
+				serif: ['Playfair Display', 'Georgia', 'serif'],
+				display: ['Dancing Script', 'cursive'],
+				heading: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+				body: ['Inter', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -84,11 +91,41 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'desi-float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-20px)' }
+				},
+				'desi-float-delayed': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-15px)' }
+				},
+				'desi-bounce': {
+					'0%, 100%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(1.1)' }
+				},
+				'desi-pulse': {
+					'0%, 100%': { opacity: '0.2' },
+					'50%': { opacity: '0.4' }
+				},
+				'desi-shimmer': {
+					'0%': { backgroundPosition: '-200% 0' },
+					'100%': { backgroundPosition: '200% 0' }
+				},
+				'desi-glow': {
+					'0%, 100%': { boxShadow: '0 0 5px rgba(251, 191, 36, 0.5)' },
+					'50%': { boxShadow: '0 0 20px rgba(251, 191, 36, 0.8)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'desi-float': 'desi-float 6s ease-in-out infinite',
+				'desi-float-delayed': 'desi-float-delayed 8s ease-in-out infinite',
+				'desi-bounce': 'desi-bounce 4s ease-in-out infinite',
+				'desi-pulse': 'desi-pulse 3s ease-in-out infinite',
+				'desi-shimmer': 'desi-shimmer 2s linear infinite',
+				'desi-glow': 'desi-glow 2s ease-in-out infinite'
 			}
 		}
 	},

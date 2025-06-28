@@ -9,7 +9,9 @@ import { auth } from "./lib/firebase";
 import { useAuthStore } from "./store/authStore";
 import { ref as dbRef, get } from "firebase/database";
 import { db } from "./lib/firebase";
+import ThemeProvider from "./components/providers/ThemeProvider";
 import Index from "./pages/Index";
+import AuthPage from "./components/auth/AuthPage";
 import ChatScreen from "./components/chat/ChatScreen";
 import SettingsPage from "./components/settings/SettingsPage";
 import PrivacySettings from "./components/settings/PrivacySettings";
@@ -64,25 +66,28 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/chat/:id" element={<ChatScreen />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/settings/privacy" element={<PrivacySettings />} />
-            <Route path="/settings/notifications" element={<NotificationSettings />} />
-            <Route path="/settings/chats" element={<ChatSettings />} />
-            <Route path="/settings/appearance" element={<AppearanceSettings />} />
-            <Route path="/settings/starred" element={<StarredMessages />} />
-            <Route path="/settings/security" element={<SecuritySettings />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/chat/:id" element={<ChatScreen />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/settings/privacy" element={<PrivacySettings />} />
+              <Route path="/settings/notifications" element={<NotificationSettings />} />
+              <Route path="/settings/chats" element={<ChatSettings />} />
+              <Route path="/settings/appearance" element={<AppearanceSettings />} />
+              <Route path="/settings/starred" element={<StarredMessages />} />
+              <Route path="/settings/security" element={<SecuritySettings />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
