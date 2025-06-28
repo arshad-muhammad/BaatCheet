@@ -1,52 +1,27 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Phone, Video, PhoneCall, PhoneMissed, PhoneIncoming, PhoneOutgoing } from 'lucide-react';
+import { useCallStore } from '../../store/callStore';
+import { useAuthStore } from '../../store/authStore';
+import { formatDistanceToNow } from 'date-fns';
 
 const CallsList = () => {
-  const calls = [
-    {
-      id: '1',
-      name: 'Sarah Wilson',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332c1a0?w=150&h=150&fit=crop&crop=face',
-      type: 'outgoing',
-      callType: 'voice',
-      time: '2 hours ago',
-      duration: '12:34',
-      missed: false,
-    },
-    {
-      id: '2',
-      name: 'Alex Chen',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      type: 'incoming',
-      callType: 'video',
-      time: '5 hours ago',
-      duration: null,
-      missed: true,
-    },
-    {
-      id: '3',
-      name: 'Emma Davis',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-      type: 'outgoing',
-      callType: 'voice',
-      time: 'Yesterday',
-      duration: '5:42',
-      missed: false,
-    },
-    {
-      id: '4',
-      name: 'Team Project',
-      avatar: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=150&h=150&fit=crop',
-      type: 'incoming',
-      callType: 'video',
-      time: '2 days ago',
-      duration: '45:12',
-      missed: false,
-    },
-  ];
+  const { user } = useAuthStore();
+  const { getCallsForUser } = useCallStore();
+  
+  const calls = user?.id ? getCallsForUser(user.id) : [];
+
+  const formatDuration = (seconds?: number) => {
+    if (!seconds) return null;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatTime = (timestamp: number) => {
+    return formatDistanceToNow(timestamp, { addSuffix: true });
+  };
 
   const getCallIcon = (type: string, missed: boolean) => {
     if (missed) return <PhoneMissed className="w-4 h-4 text-red-500" />;
@@ -63,9 +38,9 @@ const CallsList = () => {
         >
           <div className="flex items-center space-x-3">
             <Avatar className="w-12 h-12">
-              <AvatarImage src={call.avatar} />
+              <AvatarImage src={call.otherUserAvatar} />
               <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white">
-                {call.name.charAt(0).toUpperCase()}
+                {call.otherUserName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
@@ -74,7 +49,7 @@ const CallsList = () => {
                 <h3 className={`font-medium truncate ${
                   call.missed ? 'text-red-600' : 'text-gray-900'
                 }`}>
-                  {call.name}
+                  {call.otherUserName}
                 </h3>
                 {getCallIcon(call.type, call.missed)}
               </div>
@@ -83,8 +58,8 @@ const CallsList = () => {
                   <Video className="w-3 h-3 text-gray-400" />
                 )}
                 <span className="text-sm text-gray-500">
-                  {call.time}
-                  {call.duration && ` • ${call.duration}`}
+                  {formatTime(call.timestamp)}
+                  {call.duration && ` • ${formatDuration(call.duration)}`}
                 </span>
               </div>
             </div>

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
+import { useCallStore } from '../../store/callStore';
 import { ArrowLeft, Phone, Video, Settings, Send, Mic, Camera, File, Smile, Paperclip, Image as ImageIcon } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import { formatDistanceToNow } from 'date-fns';
@@ -52,6 +53,7 @@ const ChatScreen = () => {
   const navigate = useNavigate();
   const { chats, messages, addMessage } = useChatStore();
   const { user } = useAuthStore();
+  const { addCall, updateCallDuration, updateCallStatus } = useCallStore();
   const [newMessage, setNewMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [firebaseMessages, setFirebaseMessages] = useState<Message[]>([]);
@@ -83,9 +85,13 @@ const ChatScreen = () => {
   const [callType, setCallType] = useState<'audio' | 'video'>('audio');
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const localAudioRef = useRef<HTMLAudioElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const [callObj, setCallObj] = useState<Peer.MediaConnection | null>(null);
   const [callStatus, setCallStatus] = useState<'idle' | 'connecting' | 'connected' | 'failed'>('idle');
   const peerSetupRef = useRef(false);
+  const [currentCallId, setCurrentCallId] = useState<string | null>(null);
+  const callStartTimeRef = useRef<number | null>(null);
 
   const chat = chats.find(c => c.id === id);
   const chatMessages = messages[id || ''] || [];
@@ -129,7 +135,12 @@ const ChatScreen = () => {
       config: {
         'iceServers': [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          }
         ]
       }
     });
@@ -157,7 +168,12 @@ const ChatScreen = () => {
           config: {
             'iceServers': [
               { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
+              { urls: 'stun:stun1.l.google.com:19302' },
+              {
+                urls: 'turn:openrelay.metered.ca:80',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+              }
             ]
           }
         });
@@ -181,20 +197,53 @@ const ChatScreen = () => {
     };
   }, [user?.id]);
 
-  // Attach streams to video elements
+  // Attach streams to video and audio elements
   useEffect(() => {
+    console.log('[Audio Debug] Stream attachment effect triggered');
+    console.log('[Audio Debug] Local stream:', localStream);
+    console.log('[Audio Debug] Remote stream:', remoteStream);
+    
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
+      console.log('[Audio Debug] Local video stream attached');
     }
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
+      console.log('[Audio Debug] Remote video stream attached');
+    }
+    if (localAudioRef.current && localStream) {
+      localAudioRef.current.srcObject = localStream;
+      console.log('[Audio Debug] Local audio stream attached');
+    }
+    if (remoteAudioRef.current && remoteStream) {
+      remoteAudioRef.current.srcObject = remoteStream;
+      console.log('[Audio Debug] Remote audio stream attached');
+      // Ensure the audio element is playing
+      remoteAudioRef.current.play().catch(e => {
+        console.error('[Audio Debug] Failed to play remote audio:', e);
+      });
     }
   }, [localStream, remoteStream, callDialogOpen]);
 
   const handleAcceptCall = async () => {
-    if (!incomingCall) return;
+    if (!incomingCall || !user?.id) return;
     setIncomingCallDialogOpen(false);
     setCallDialogOpen(true);
+    
+    // Record the incoming call
+    const callId = addCall({
+      userId: user.id,
+      otherUserId: incomingCall.peer,
+      otherUserName: displayName || 'Unknown',
+      otherUserAvatar: displayAvatar,
+      type: 'incoming',
+      callType: callType === 'video' ? 'video' : 'voice',
+      missed: false,
+      status: 'completed'
+    });
+    setCurrentCallId(callId);
+    callStartTimeRef.current = Date.now();
+    
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: callType === 'video',
@@ -204,21 +253,55 @@ const ChatScreen = () => {
       incomingCall.answer(stream);
       setCallObj(incomingCall);
       incomingCall.on('stream', (remoteStream: MediaStream) => {
+        console.log('[Audio Debug] Remote stream received');
+        console.log('[Audio Debug] Remote stream tracks:', remoteStream.getTracks());
+        console.log('[Audio Debug] Remote stream has audio:', remoteStream.getAudioTracks().length > 0);
         setRemoteStream(remoteStream);
+        setCallStatus('connected');
       });
       incomingCall.on('close', () => {
         setCallDialogOpen(false);
         setRemoteStream(null);
         setLocalStream(null);
         setCallObj(null);
+        
+        // Update call duration and status
+        if (currentCallId && callStartTimeRef.current) {
+          const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
+          updateCallDuration(currentCallId, duration);
+          updateCallStatus(currentCallId, 'completed');
+        }
+        setCurrentCallId(null);
+        callStartTimeRef.current = null;
       });
     } catch (error) {
       console.error('Error accepting call:', error);
       setIncomingCallDialogOpen(false);
+      
+      // Update call status to failed
+      if (currentCallId) {
+        updateCallStatus(currentCallId, 'failed');
+      }
+      setCurrentCallId(null);
+      callStartTimeRef.current = null;
     }
   };
 
   const handleRejectCall = () => {
+    if (!incomingCall || !user?.id) return;
+    
+    // Record the missed incoming call
+    addCall({
+      userId: user.id,
+      otherUserId: incomingCall.peer,
+      otherUserName: displayName || 'Unknown',
+      otherUserAvatar: displayAvatar,
+      type: 'incoming',
+      callType: callType === 'video' ? 'video' : 'voice',
+      missed: true,
+      status: 'missed'
+    });
+    
     if (incomingCall) {
       incomingCall.close();
     }
@@ -232,6 +315,15 @@ const ChatScreen = () => {
     setRemoteStream(null);
     setLocalStream(null);
     setCallObj(null);
+    
+    // Update call duration and status
+    if (currentCallId && callStartTimeRef.current) {
+      const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
+      updateCallDuration(currentCallId, duration);
+      updateCallStatus(currentCallId, 'completed');
+    }
+    setCurrentCallId(null);
+    callStartTimeRef.current = null;
   };
 
   if (!chat) {
@@ -434,28 +526,90 @@ const ChatScreen = () => {
   };
 
   const handleStartCall = async (type: 'audio' | 'video') => {
-    if (!peer || !chat || chat.isGroup) return;
-    
+    if (!user?.id) {
+      alert('Please log in to make calls.');
+      return;
+    }
+    if (!chat || chat.isGroup) {
+      alert('Calls are only available in 1:1 chats.');
+      return;
+    }
+    if (!chat.otherUserId) {
+      alert('Unable to identify the other user. Please try again.');
+      return;
+    }
+    if (!peer) {
+      alert('Call service is not ready. Please wait a moment and try again.');
+      return;
+    }
     try {
       setCallType(type);
       setCallStatus('connecting');
       setCallDialogOpen(true);
       const otherUserId = chat.otherUserId;
       
+      // Record the outgoing call
+      const callId = addCall({
+        userId: user.id,
+        otherUserId: otherUserId,
+        otherUserName: displayName || 'Unknown',
+        otherUserAvatar: displayAvatar,
+        type: 'outgoing',
+        callType: type === 'video' ? 'video' : 'voice',
+        missed: false,
+        status: 'completed'
+      });
+      setCurrentCallId(callId);
+      callStartTimeRef.current = Date.now();
+      
       console.log('Starting call to:', otherUserId);
       console.log('Current peer ID:', peer.id);
       
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: type === 'video',
-        audio: true,
-      });
+      // Request media permissions first
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: type === 'video',
+          audio: true,
+        });
+        console.log('Media permissions granted');
+      } catch (mediaError) {
+        console.error('Media permission error:', mediaError);
+        setCallStatus('failed');
+        setCallDialogOpen(false);
+        // Update call status to failed
+        if (currentCallId) {
+          updateCallStatus(currentCallId, 'failed');
+        }
+        // Show a more actionable error message
+        if (mediaError && typeof mediaError === 'object' && 'name' in mediaError) {
+          switch ((mediaError as any).name) {
+            case 'NotAllowedError':
+              alert('Camera/microphone access was denied. Please allow permissions in your browser settings and try again.');
+              break;
+            case 'NotFoundError':
+              alert('No camera or microphone found. Please check your device and try again.');
+              break;
+            case 'NotReadableError':
+              alert('Camera or microphone is already in use by another application.');
+              break;
+            default:
+              alert('Failed to access camera/microphone. Please check your permissions and device.');
+          }
+        } else {
+          alert('Failed to access camera/microphone. Please check your permissions and device.');
+        }
+        return;
+      }
       setLocalStream(stream);
-      
+      // Make the call
       const call = peer.call(otherUserId, stream, { metadata: { type } });
       setCallObj(call);
       
       call.on('stream', (remoteStream: MediaStream) => {
-        console.log('Remote stream received');
+        console.log('[Audio Debug] Remote stream received');
+        console.log('[Audio Debug] Remote stream tracks:', remoteStream.getTracks());
+        console.log('[Audio Debug] Remote stream has audio:', remoteStream.getAudioTracks().length > 0);
         setRemoteStream(remoteStream);
         setCallStatus('connected');
       });
@@ -467,16 +621,37 @@ const ChatScreen = () => {
         setRemoteStream(null);
         setLocalStream(null);
         setCallObj(null);
+        
+        // Update call duration and status
+        if (currentCallId && callStartTimeRef.current) {
+          const duration = Math.floor((Date.now() - callStartTimeRef.current) / 1000);
+          updateCallDuration(currentCallId, duration);
+          updateCallStatus(currentCallId, 'completed');
+        }
+        setCurrentCallId(null);
+        callStartTimeRef.current = null;
       });
       
       call.on('error', (err) => {
         console.error('Call error:', err);
         setCallStatus('failed');
-        alert('Call failed. The other user might not be online or available.');
         setCallDialogOpen(false);
         setRemoteStream(null);
         setLocalStream(null);
         setCallObj(null);
+        
+        // Update call status to failed
+        if (currentCallId) {
+          updateCallStatus(currentCallId, 'failed');
+        }
+        setCurrentCallId(null);
+        callStartTimeRef.current = null;
+        
+        if (err.type === 'peer-unavailable') {
+          alert('The other user is not available for calls right now.');
+        } else {
+          alert('Call failed. The other user might not be online or available.');
+        }
       });
       
       // Add a timeout to handle cases where the call doesn't connect
@@ -484,20 +659,43 @@ const ChatScreen = () => {
         if (callStatus === 'connecting' && callObj === call) {
           console.log('Call timeout - no response from peer');
           setCallStatus('failed');
-          alert('Call timed out. The other user might not be online.');
-          call.close();
           setCallDialogOpen(false);
           setRemoteStream(null);
           setLocalStream(null);
           setCallObj(null);
+          call.close();
+          
+          // Update call status to failed
+          if (currentCallId) {
+            updateCallStatus(currentCallId, 'failed');
+          }
+          setCurrentCallId(null);
+          callStartTimeRef.current = null;
+          
+          alert('Call timed out. The other user might not be online.');
         }
       }, 15000); // 15 second timeout
       
     } catch (error) {
       console.error('Error starting call:', error);
       setCallStatus('failed');
-      alert('Failed to start call. Please check your camera/microphone permissions.');
       setCallDialogOpen(false);
+      setRemoteStream(null);
+      setLocalStream(null);
+      setCallObj(null);
+      
+      // Update call status to failed
+      if (currentCallId) {
+        updateCallStatus(currentCallId, 'failed');
+      }
+      setCurrentCallId(null);
+      callStartTimeRef.current = null;
+      
+      if (error instanceof Error) {
+        alert(`Call error: ${error.message}`);
+      } else {
+        alert('Failed to start call. Please try again.');
+      }
     }
   };
 
@@ -691,6 +889,9 @@ const ChatScreen = () => {
             {callStatus === 'connected' && (callType === 'video' ? 'Video call in progress' : 'Voice call in progress')}
             {callStatus === 'failed' && 'Call failed'}
           </CallDialogDescription>
+          {/* Hidden audio elements for voice calls */}
+          <audio ref={localAudioRef} autoPlay muted playsInline />
+          <audio ref={remoteAudioRef} autoPlay playsInline />
           <div className="w-full flex flex-col items-center">
             <div className="flex flex-col items-center space-y-2 w-full">
               {callType === 'video' ? (
