@@ -737,35 +737,35 @@ const ChatScreen = () => {
         <div className="absolute bottom-20 right-10 w-28 h-28 bg-gradient-to-r from-yellow-400 to-amber-400 dark:from-yellow-500/20 dark:to-amber-500/20 rounded-full opacity-15 animate-desi-float-delayed"></div>
       </div>
       
-      <div className="max-w-md mx-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-2xl min-h-screen flex flex-col relative z-10 border-l border-r border-white/20 dark:border-gray-700/20">
+      <div className="w-full max-w-md mx-auto bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-2xl min-h-screen flex flex-col relative z-10 border-l border-r border-white/20 dark:border-gray-700/20">
         {/* Header */}
-        <div className="bg-gradient-to-r from-yellow-100/95 via-amber-100/95 to-orange-100/95 dark:from-gray-800/95 dark:via-gray-700/95 dark:to-gray-800/95 backdrop-blur-md border-b border-yellow-200/50 dark:border-gray-600/50 p-4 shadow-lg">
-          <div className="flex items-center space-x-3">
+        <div className="bg-gradient-to-r from-yellow-100/95 via-amber-100/95 to-orange-100/95 dark:from-gray-800/95 dark:via-gray-700/95 dark:to-gray-800/95 backdrop-blur-md border-b border-yellow-200/50 dark:border-gray-600/50 p-3 sm:p-4 shadow-lg">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="p-2 hover:bg-yellow-200/50 dark:hover:bg-gray-600/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
+              className="p-1.5 sm:p-2 hover:bg-yellow-200/50 dark:hover:bg-gray-600/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover flex-shrink-0"
             >
-              <ArrowLeft className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-400" />
             </Button>
 
-            <div className="flex items-center space-x-3 flex-1">
-              <div className="relative group">
-                <Avatar className="w-12 h-12 ring-2 ring-yellow-200 dark:ring-yellow-600 hover:ring-amber-300 dark:hover:ring-amber-400 transition-all duration-300 group-hover:scale-110 shadow-lg">
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+              <div className="relative group flex-shrink-0">
+                <Avatar className="w-10 h-10 sm:w-12 sm:h-12 ring-2 ring-yellow-200 dark:ring-yellow-600 hover:ring-amber-300 dark:hover:ring-amber-400 transition-all duration-300 group-hover:scale-110 shadow-lg">
                   <AvatarImage src={displayAvatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 dark:from-yellow-500 dark:via-amber-500 dark:to-orange-500 text-white font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 dark:from-yellow-500 dark:via-amber-500 dark:to-orange-500 text-white font-bold text-sm sm:text-base">
                     {(displayName || '').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {!chat.isGroup && chat.isOnline && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-400 border-2 border-white rounded-full animate-desi-pulse"></div>
+                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gradient-to-r from-green-400 to-emerald-400 border-2 border-white rounded-full animate-desi-pulse"></div>
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-yellow-800 dark:text-yellow-200 truncate text-lg">{displayName || 'Unknown'}</h2>
-                <p className="text-sm text-yellow-600/80 dark:text-yellow-400/80 font-medium">
+                <h2 className="font-bold text-yellow-800 dark:text-yellow-200 truncate text-base sm:text-lg">{displayName || 'Unknown'}</h2>
+                <p className="text-xs sm:text-sm text-yellow-600/80 dark:text-yellow-400/80 font-medium truncate">
                   {chat.isGroup 
                     ? `${chat.members?.length || 0} members`
                     : chat.isOnline 
@@ -776,42 +776,42 @@ const ChatScreen = () => {
               </div>
             </div>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-3 hover:bg-green-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
+                className="p-2 sm:p-3 hover:bg-green-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
                 onClick={() => handleStartCall('audio')} 
                 disabled={chat.isGroup} 
                 title={chat.isGroup ? 'Calls only available in 1:1 chats' : 'Start voice call'}
               >
-                <Phone className="w-5 h-5 text-green-600" />
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-3 hover:bg-indigo-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
+                className="p-2 sm:p-3 hover:bg-indigo-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
                 onClick={() => handleStartCall('video')} 
                 disabled={chat.isGroup} 
                 title={chat.isGroup ? 'Calls only available in 1:1 chats' : 'Start video call'}
               >
-                <Video className="w-5 h-5 text-indigo-600" />
+                <Video className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-3 hover:bg-purple-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
+                className="p-2 sm:p-3 hover:bg-purple-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
                 onClick={() => setShowWallpaperPicker(true)}
                 title="Change wallpaper"
               >
-                <Palette className="w-5 h-5 text-purple-600" />
+                <Palette className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-3 hover:bg-pink-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
+                className="p-2 sm:p-3 hover:bg-pink-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
               >
-                <Settings className="w-5 h-5 text-pink-600" />
+                <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600" />
               </Button>
             </div>
           </div>

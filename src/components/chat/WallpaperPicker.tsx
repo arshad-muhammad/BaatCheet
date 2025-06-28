@@ -125,19 +125,19 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-full bg-white/95 backdrop-blur-md border border-yellow-200/50 dark:border-yellow-600/50">
-        <DialogTitle className="text-yellow-800 dark:text-yellow-200 font-bold text-xl">
+      <DialogContent className="max-w-2xl w-[95vw] sm:w-full bg-white/95 backdrop-blur-md border border-yellow-200/50 dark:border-yellow-600/50 mx-2">
+        <DialogTitle className="text-yellow-800 dark:text-yellow-200 font-bold text-lg sm:text-xl">
           Chat Wallpaper
         </DialogTitle>
-        <DialogDescription className="text-yellow-600 dark:text-yellow-400">
+        <DialogDescription className="text-yellow-600 dark:text-yellow-400 text-sm">
           Choose a wallpaper for your chat background
         </DialogDescription>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Wallpaper Options */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Predefined Wallpapers</h3>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 text-sm sm:text-base">Predefined Wallpapers</h3>
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {predefinedWallpapers.map((wallpaper) => (
                 <div
                   key={wallpaper.id}
@@ -148,11 +148,11 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
                   }`}
                   onClick={() => handleWallpaperSelect(wallpaper)}
                 >
-                  <div className={`w-full h-24 ${wallpaper.preview}`} />
+                  <div className={`w-full h-20 sm:h-24 ${wallpaper.preview}`} />
                   <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <Check className="w-6 h-6 text-white" />
+                    <Check className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2 text-center">
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1.5 sm:p-2 text-center">
                     {wallpaper.name}
                   </div>
                 </div>
@@ -160,15 +160,15 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
             </div>
 
             {/* Custom Image Upload */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Custom Image</h3>
+            <div className="space-y-2 sm:space-y-3">
+              <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 text-sm sm:text-base">Custom Image</h3>
               <div className="flex space-x-2">
                 <Button
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 border-2 border-yellow-200 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50"
+                  className="flex-1 border-2 border-yellow-200 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 text-sm"
                 >
-                  <Upload className="w-4 h-4 mr-2" />
+                  <Upload className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   Upload Image
                 </Button>
                 {customImageUrl && (
@@ -178,9 +178,9 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
                       setCustomImageUrl('');
                       setSelectedWallpaper('default');
                     }}
-                    className="border-2 border-red-200 text-red-700 hover:bg-red-50"
+                    className="border-2 border-red-200 text-red-700 hover:bg-red-50 p-2"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 )}
               </div>
@@ -196,9 +196,9 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
                   <img
                     src={customImageUrl}
                     alt="Custom wallpaper"
-                    className="w-full h-24 object-cover"
+                    className="w-full h-20 sm:h-24 object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-2 text-center">
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1.5 sm:p-2 text-center">
                     Custom Image
                   </div>
                 </div>
@@ -207,9 +207,9 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
           </div>
 
           {/* Preview */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">Preview</h3>
-            <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-600 h-64">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 text-sm sm:text-base">Preview</h3>
+            <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-600 h-48 sm:h-64">
               {selectedWallpaper === 'default' || selectedWallpaper.startsWith('bg-') ? (
                 <div className={`absolute inset-0 ${getCurrentWallpaper()}`} />
               ) : null}
@@ -223,24 +223,24 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
               
               {/* Simulated chat interface */}
               <div className="absolute inset-0 bg-black/10" />
-              <div className="absolute top-4 left-4 right-4 bg-white/90 backdrop-blur-md rounded-lg p-3">
+              <div className="absolute top-2 sm:top-4 left-2 sm:left-4 right-2 sm:right-4 bg-white/90 backdrop-blur-md rounded-lg p-2 sm:p-3">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-yellow-400 rounded-full" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-yellow-400 rounded-full" />
                   <div className="flex-1">
-                    <div className="h-3 bg-gray-300 rounded w-20 mb-1" />
-                    <div className="h-2 bg-gray-200 rounded w-16" />
+                    <div className="h-2 sm:h-3 bg-gray-300 rounded w-16 sm:w-20 mb-1" />
+                    <div className="h-1.5 sm:h-2 bg-gray-200 rounded w-12 sm:w-16" />
                   </div>
                 </div>
               </div>
               
-              <div className="absolute bottom-4 left-4 right-4">
-                <div className="bg-white/90 backdrop-blur-md rounded-lg p-2 mb-2">
-                  <div className="h-3 bg-gray-300 rounded w-32 mb-1" />
-                  <div className="h-2 bg-gray-200 rounded w-24" />
+              <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
+                <div className="bg-white/90 backdrop-blur-md rounded-lg p-1.5 sm:p-2 mb-1 sm:mb-2">
+                  <div className="h-2 sm:h-3 bg-gray-300 rounded w-24 sm:w-32 mb-1" />
+                  <div className="h-1.5 sm:h-2 bg-gray-200 rounded w-16 sm:w-24" />
                 </div>
-                <div className="bg-yellow-100/90 backdrop-blur-md rounded-lg p-2 ml-8">
-                  <div className="h-3 bg-yellow-300 rounded w-28 mb-1" />
-                  <div className="h-2 bg-yellow-200 rounded w-20" />
+                <div className="bg-yellow-100/90 backdrop-blur-md rounded-lg p-1.5 sm:p-2 ml-6 sm:ml-8">
+                  <div className="h-2 sm:h-3 bg-yellow-300 rounded w-20 sm:w-28 mb-1" />
+                  <div className="h-1.5 sm:h-2 bg-yellow-200 rounded w-14 sm:w-20" />
                 </div>
               </div>
             </div>
@@ -248,11 +248,11 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
         </div>
 
         {/* Actions */}
-        <div className="flex justify-between space-x-3 pt-4 border-t border-yellow-200/50 dark:border-yellow-600/50">
+        <div className="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-3 pt-3 sm:pt-4 border-t border-yellow-200/50 dark:border-yellow-600/50">
           <Button
             variant="outline"
             onClick={handleReset}
-            className="border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50"
+            className="border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 text-sm"
           >
             Reset to Default
           </Button>
@@ -260,13 +260,13 @@ const WallpaperPicker: React.FC<WallpaperPickerProps> = ({ open, onOpenChange })
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="border-2 border-yellow-200 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50"
+              className="border-2 border-yellow-200 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 text-sm"
             >
               Cancel
             </Button>
             <Button
               onClick={handleApply}
-              className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-bold shadow-lg"
+              className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-bold shadow-lg text-sm"
             >
               Apply Wallpaper
             </Button>
