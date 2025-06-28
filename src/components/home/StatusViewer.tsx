@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChevronLeft, ChevronRight, X, Trash2, Clock } from 'lucide-react';
@@ -115,6 +115,8 @@ const StatusViewer: React.FC<StatusViewerProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-none w-full h-full p-0 bg-black">
+        <DialogTitle className="sr-only">Status Viewer</DialogTitle>
+        <DialogDescription className="sr-only">View status updates from {userInfo?.name || 'user'}</DialogDescription>
         <div className="relative w-full h-full flex flex-col">
           {/* Header */}
           <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/50 to-transparent">

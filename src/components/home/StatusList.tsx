@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Plus, Camera, Loader2 } from 'lucide-react';
 import { fetchStatusesForAcceptedContacts, getUserInfo } from '../../lib/firebase';
+import { useAuthStore } from '../../store/authStore';
 import StatusViewer from './StatusViewer';
 
 interface StatusItem {
@@ -30,10 +31,10 @@ const StatusList = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const userId = localStorage.getItem('userId');
+  const { user } = useAuthStore();
 
   useEffect(() => {
-    if (!userId) {
+    if (!user?.id) {
       setLoading(false);
       return;
     }
@@ -41,7 +42,7 @@ const StatusList = () => {
     const loadStatuses = async () => {
       try {
         setError(null);
-        const allStatuses = await fetchStatusesForAcceptedContacts(userId);
+        const allStatuses = await fetchStatusesForAcceptedContacts(user.id);
         
         // Group statuses by user
         const grouped: Record<string, StatusItem[]> = {};
@@ -65,10 +66,10 @@ const StatusList = () => {
           })
         );
 
-        setGroupedStatuses(groupedArr.filter(g => g.userId !== userId));
+        setGroupedStatuses(groupedArr.filter(g => g.userId !== user.id));
         
         // My status
-        const myStatuses = groupedArr.find(g => g.userId === userId);
+        const myStatuses = groupedArr.find(g => g.userId === user.id);
         setMyStatus({
           hasStatus: !!myStatuses && myStatuses.statuses.length > 0,
           avatar: myStatuses?.statuses[0]?.mediaURL || '',
@@ -87,7 +88,7 @@ const StatusList = () => {
     const interval = setInterval(loadStatuses, 30000); // Refresh every 30 seconds
     
     return () => clearInterval(interval);
-  }, [userId]);
+  }, [user?.id]);
 
   const handleStatusClick = (statuses: StatusItem[], startIndex: number = 0) => {
     setCurrentStatuses(statuses);
@@ -108,13 +109,13 @@ const StatusList = () => {
     );
     
     // Update my status if it was deleted
-    if (currentStatuses.find(s => s.id === statusId)?.userId === userId) {
+    if (currentStatuses.find(s => s.id === statusId)?.userId === user?.id) {
       setMyStatus(prev => ({ ...prev, hasStatus: false, avatar: '' }));
     }
   };
 
   const handleMyStatusClick = () => {
-    const myStatuses = groupedStatuses.find(g => g.userId === userId)?.statuses || [];
+    const myStatuses = groupedStatuses.find(g => g.userId === user?.id)?.statuses || [];
     if (myStatuses.length > 0) {
       handleStatusClick(myStatuses, 0);
     }
@@ -239,7 +240,7 @@ const StatusList = () => {
         currentIndex={currentIndex}
         onStatusChange={setCurrentIndex}
         onStatusDelete={handleStatusDelete}
-        currentUserId={userId || ''}
+        currentUserId={user?.id || ''}
       />
     </div>
   );

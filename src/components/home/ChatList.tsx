@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChatStore } from '../../store/chatStore';
+import { useAuthStore } from '../../store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { Pin, Users, Check, CheckCheck, MessageCircle, Trash2 } from 'lucide-react';
-import { fetchReceivedInvitations, fetchSentInvitations, acceptInvitation, rejectInvitation, fetchAllUsers, deleteChatForUser } from '@/lib/firebase';
+import { fetchReceivedInvitations, fetchSentInvitations, acceptInvitation, rejectInvitation, fetchAllUsers, deleteChatForUser, testInvitationExists } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -25,24 +26,68 @@ interface ChatListProps {
 
 const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
   const { chats } = useChatStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const [receivedInv, setReceivedInv] = useState([]);
   const [sentInv, setSentInv] = useState([]);
   const [usersById, setUsersById] = useState({});
-  const userId = localStorage.getItem('userId');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userId) return;
-    fetchReceivedInvitations(userId).then(setReceivedInv);
-    fetchSentInvitations(userId).then(setSentInv);
+    console.log('=== CHATLIST useEffect TRIGGERED ===');
+    console.log('user?.id:', user?.id);
+    console.log('user object:', user);
+    
+    if (!user?.id) {
+      console.log('No user ID found, user object:', user);
+      return;
+    }
+    console.log('=== CHATLIST DEBUG ===');
+    console.log('Current user ID:', user.id);
+    console.log('User object:', user);
+    console.log('Fetching invitations for user:', user.id);
+    
+    // Fetch received invitations
+    fetchReceivedInvitations(user.id).then(invitations => {
+      console.log('=== RECEIVED INVITATIONS ===');
+      console.log('Received invitations:', invitations);
+      console.log('Number of received invitations:', invitations.length);
+      setReceivedInv(invitations);
+    }).catch(error => {
+      console.error('Error fetching received invitations:', error);
+    });
+    
+    // Fetch sent invitations
+    fetchSentInvitations(user.id).then(invitations => {
+      console.log('=== SENT INVITATIONS ===');
+      console.log('Sent invitations:', invitations);
+      console.log('Number of sent invitations:', invitations.length);
+      setSentInv(invitations);
+    }).catch(error => {
+      console.error('Error fetching sent invitations:', error);
+    });
+    
+    // Fetch all users
     fetchAllUsers().then(users => {
+      console.log('=== ALL USERS ===');
+      console.log('All users:', users);
+      console.log('Number of users:', users.length);
       const map = {};
       users.forEach(u => { map[u.id] = u; });
       setUsersById(map);
+    }).catch(error => {
+      console.error('Error fetching all users:', error);
     });
-  }, [userId]);
+  }, [user?.id]);
+
+  // Test invitation existence for debugging
+  useEffect(() => {
+    if (user?.id === 'LcnBOTI6uZYFOyIDbQKIyXQZQIZ2') {
+      console.log('=== TESTING INVITATION FOR RECIPIENT ===');
+      testInvitationExists('LcnBOTI6uZYFOyIDbQKIyXQZQIZ2', 'T8sByXKsS0XGcNLIS2lDXRlznrM2_LcnBOTI6uZYFOyIDbQKIyXQZQIZ2');
+    }
+  }, [user?.id]);
 
   // Only show chats for accepted invitations or group chats
   const filteredChats = chats.filter(chat =>
@@ -64,23 +109,44 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
   };
 
   const handleAccept = async (invId: string) => {
-    await acceptInvitation(userId, invId);
-    fetchReceivedInvitations(userId).then(setReceivedInv);
+    if (!user?.id) return;
+    console.log('Accepting invitation:', invId);
+    await acceptInvitation(user.id, invId);
+    fetchReceivedInvitations(user.id).then(setReceivedInv);
     // Optionally, refresh chats
     window.location.reload();
   };
+  
   const handleReject = async (invId: string) => {
-    await rejectInvitation(userId, invId);
-    fetchReceivedInvitations(userId).then(setReceivedInv);
+    if (!user?.id) return;
+    console.log('Rejecting invitation:', invId);
+    await rejectInvitation(user.id, invId);
+    fetchReceivedInvitations(user.id).then(setReceivedInv);
   };
 
-  // Only show invitations with status 'pending'
-  const pendingReceivedInv = receivedInv.filter(inv => inv.status === 'pending');
-  const pendingSentInv = sentInv.filter(inv => inv.status === 'pending');
+  // Only show invitations with status 'pending' or undefined (default to pending)
+  const pendingReceivedInv = receivedInv.filter(inv => {
+    console.log('Filtering received invitation:', inv);
+    return !inv.status || inv.status === 'pending';
+  });
+  const pendingSentInv = sentInv.filter(inv => {
+    console.log('Filtering sent invitation:', inv);
+    return !inv.status || inv.status === 'pending';
+  });
+
+  console.log('=== CHATLIST RENDER DEBUG ===');
+  console.log('All received invitations:', receivedInv);
+  console.log('All sent invitations:', sentInv);
+  console.log('Pending received invitations:', pendingReceivedInv);
+  console.log('Pending sent invitations:', pendingSentInv);
+  console.log('Users by ID:', usersById);
+  console.log('Current user object:', user);
+  console.log('Filtered chats:', filteredChats);
+  console.log('Sorted chats:', sortedChats);
 
   const handleDeleteChat = async () => {
-    if (!chatToDelete) return;
-    await deleteChatForUser(userId, chatToDelete);
+    if (!chatToDelete || !user?.id) return;
+    await deleteChatForUser(user.id, chatToDelete);
     setChatToDelete(null);
     setDeleteDialogOpen(false);
     window.location.reload(); // Or refresh chats from store
@@ -89,33 +155,82 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
   return (
     <div className="divide-y divide-gray-100">
       {/* Received Invitations */}
-      {pendingReceivedInv.map(inv => (
-        <div key={inv.id} className="p-4 bg-yellow-50 border-b border-yellow-200 flex items-center space-x-3">
-          <Avatar className="w-12 h-12">
-            <AvatarImage src={usersById[inv.from]?.avatar} />
-            <AvatarFallback>{usersById[inv.from]?.name?.[0]?.toUpperCase() || '?'}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="font-medium">{usersById[inv.from]?.name || usersById[inv.from]?.phone || inv.from}</div>
-            <div className="text-xs text-gray-500">wants to chat with you</div>
+      {pendingReceivedInv.length > 0 && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="px-4 py-2 bg-yellow-100 text-yellow-800 text-sm font-medium">
+            Received Invitations ({pendingReceivedInv.length})
           </div>
-          <Button size="sm" className="mr-2" onClick={() => handleAccept(inv.id)}>Accept</Button>
-          <Button size="sm" variant="destructive" onClick={() => handleReject(inv.id)}>Reject</Button>
+          {pendingReceivedInv.map(inv => {
+            const senderUser = usersById[inv.from];
+            console.log('Rendering received invitation:', inv, 'sender user:', senderUser);
+            return (
+              <div key={inv.id} className="p-4 flex items-center space-x-3">
+                <Avatar className="w-12 h-12">
+                  <AvatarImage src={senderUser?.photoURL || senderUser?.avatar} />
+                  <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-400 text-white">
+                    {(senderUser?.name || inv.from || '?').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900">
+                    {senderUser?.name || senderUser?.email || inv.from || 'Unknown User'}
+                  </div>
+                  <div className="text-xs text-gray-500">wants to chat with you</div>
+                </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    size="sm" 
+                    className="bg-green-500 hover:bg-green-600 text-white" 
+                    onClick={() => handleAccept(inv.id)}
+                  >
+                    Accept
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive" 
+                    onClick={() => handleReject(inv.id)}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ))}
+      )}
       {/* Sent Invitations */}
-      {pendingSentInv.map(inv => (
-        <div key={inv.id} className="p-4 bg-blue-50 border-b border-blue-200 flex items-center space-x-3">
-          <Avatar className="w-12 h-12">
-            <AvatarImage src={usersById[inv.recipientId]?.avatar} />
-            <AvatarFallback>{usersById[inv.recipientId]?.name?.[0]?.toUpperCase() || '?'}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="font-medium">{usersById[inv.recipientId]?.name || usersById[inv.recipientId]?.phone || inv.recipientId}</div>
-            <div className="text-xs text-gray-500">Invitation: {inv.status || 'pending'}</div>
+      {pendingSentInv.length > 0 && (
+        <div className="bg-blue-50 border-b border-blue-200">
+          <div className="px-4 py-2 bg-blue-100 text-blue-800 text-sm font-medium">
+            Sent Invitations ({pendingSentInv.length})
           </div>
+          {pendingSentInv.map(inv => {
+            const recipientUser = usersById[inv.recipientId];
+            console.log('Rendering sent invitation:', inv, 'recipient user:', recipientUser);
+            return (
+              <div key={inv.id} className="p-4 flex items-center space-x-3">
+                <Avatar className="w-12 h-12">
+                  <AvatarImage src={recipientUser?.photoURL || recipientUser?.avatar} />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-400 text-white">
+                    {(recipientUser?.name || inv.recipientId || '?').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900">
+                    {recipientUser?.name || recipientUser?.email || inv.recipientId || 'Unknown User'}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Invitation: {inv.status || 'pending'}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400">
+                  Waiting for response...
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ))}
+      )}
       {/* Chats */}
       {sortedChats.map((chat) => {
         // For 1:1 chats, show the other user's name (not UID), fallback to chat.otherUserName
@@ -124,7 +239,7 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
         if (!chat.isGroup) {
           if (usersById[chat.otherUserId]) {
             displayName = usersById[chat.otherUserId].name || usersById[chat.otherUserId].phone || chat.otherUserName || chat.otherUserId;
-            displayAvatar = usersById[chat.otherUserId].avatar || chat.otherUserAvatar || '';
+            displayAvatar = usersById[chat.otherUserId].photoURL || usersById[chat.otherUserId].avatar || chat.otherUserAvatar || '';
           } else {
             displayName = chat.otherUserName || chat.otherUserId;
             displayAvatar = chat.otherUserAvatar || '';
@@ -225,15 +340,25 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
         );
       })}
 
-      {filteredChats.length === 0 && (
+      {filteredChats.length === 0 && pendingReceivedInv.length === 0 && pendingSentInv.length === 0 && (
         <div className="p-8 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
             <MessageCircle className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-600 mb-2">No chats found</h3>
-          <p className="text-gray-500">
-            {searchQuery ? 'Try a different search term' : 'Start a new conversation'}
+          <h3 className="text-lg font-medium text-gray-600 mb-2">
+            {searchQuery ? 'No chats found' : 'No conversations yet'}
+          </h3>
+          <p className="text-gray-500 mb-4">
+            {searchQuery 
+              ? 'Try a different search term' 
+              : 'Start a new conversation by sending an invitation to another user'
+            }
           </p>
+          {!searchQuery && (
+            <div className="text-sm text-gray-400">
+              Use the + button to send chat invitations
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,107 +1,154 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthStore } from '../../store/authStore';
-import { MessageCircle, Phone, Mail } from 'lucide-react';
+import { MessageCircle, Mail, Lock, User, Camera } from 'lucide-react';
 import { auth, db, storage } from '../../lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { ref as dbRef, set } from 'firebase/database';
+import { ref as dbRef, set, get } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-declare global {
-  interface Window {
-    recaptchaVerifier?: any;
-  }
-}
-
 const AuthPage = () => {
-  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [showOtp, setShowOtp] = useState(false);
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [showProfile, setShowProfile] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { login } = useAuthStore();
-  const [confirmationResult, setConfirmationResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [profilePic, setProfilePic] = useState(null);
   const [status, setStatus] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
+  const [error, setError] = useState('');
 
-  const handleSendOtp = async () => {
-    setLoading(true);
-    try {
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(
-          auth,
-          'recaptcha-container',
-          {
-            size: 'invisible',
-            callback: () => {},
+  // Check if user is authenticated but needs profile setup
+  useEffect(() => {
+    const checkUserProfile = async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const userData = await get(dbRef(db, `users/${currentUser.uid}`));
+          if (!userData.exists()) {
+            setShowProfile(true);
           }
-        );
+        } catch (error) {
+          console.error('Error checking user profile:', error);
+        }
       }
-      const appVerifier = window.recaptchaVerifier;
-      const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-      setConfirmationResult(result);
-      setShowOtp(true);
-    } catch (error) {
-      alert(error.message);
-    }
-    setLoading(false);
-  };
+    };
 
-  const handleVerifyOtp = async () => {
+    checkUserProfile();
+  }, []);
+
+  const handleAuth = async () => {
     setLoading(true);
+    setError('');
+    
     try {
-      if (confirmationResult) {
-        const res = await confirmationResult.confirm(otp);
+      let userCredential;
+      
+      if (isSignUp) {
+        // Sign up
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
         setShowProfile(true);
-        // Save user ID for later use
-        localStorage.setItem('userId', res.user.uid);
-        // Optionally, navigate to profile setup page
-        // navigate('/profile-setup');
+      } else {
+        // Sign in
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Check if user has profile data
+        const userData = await get(dbRef(db, `users/${userCredential.user.uid}`));
+        if (userData.exists()) {
+          const userInfo = userData.val();
+          login({
+            id: userCredential.user.uid,
+            name: userInfo.name,
+            email: userCredential.user.email,
+            status: userInfo.status,
+            photoURL: userInfo.photoURL,
+          });
+          navigate('/');
+        } else {
+          // New user without profile, show profile setup
+          setShowProfile(true);
+        }
       }
     } catch (error) {
-      alert(error.message);
+      console.error('Auth error:', error);
+      setError(getErrorMessage(error.code));
     }
+    
     setLoading(false);
   };
 
   const handleCompleteProfile = async () => {
     setUploading(true);
+    setError('');
     let photoURL = '';
+    
     try {
+      const user = auth.currentUser;
+      if (!user) throw new Error('No authenticated user');
+
+      // Upload profile picture if selected
       if (profilePic) {
-        const picRef = storageRef(storage, `profile_pics/${userId}`);
+        const picRef = storageRef(storage, `profile_pics/${user.uid}`);
         await uploadBytes(picRef, profilePic);
         photoURL = await getDownloadURL(picRef);
       }
-      await set(dbRef(db, `users/${userId}`), {
-        name,
-        phone: phoneNumber,
-        status,
-        photoURL,
+
+      // Update Firebase Auth profile
+      await updateProfile(user, {
+        displayName: name,
+        photoURL: photoURL
       });
+
+      // Save user data to database
+      await set(dbRef(db, `users/${user.uid}`), {
+        name,
+        email: user.email,
+        status: status || 'Available',
+        photoURL,
+        createdAt: Date.now(),
+      });
+
+      // Login to store
       login({
-        id: userId,
+        id: user.uid,
         name,
-        phone: phoneNumber,
-        status,
+        email: user.email,
+        status: status || 'Available',
         photoURL,
       });
-      navigate('/'); // or to your main/chat page
+
+      navigate('/');
     } catch (error) {
-      alert(error.message);
+      console.error('Profile setup error:', error);
+      setError('Failed to complete profile setup. Please try again.');
     }
+    
     setUploading(false);
+  };
+
+  const getErrorMessage = (errorCode: string) => {
+    switch (errorCode) {
+      case 'auth/email-already-in-use':
+        return 'An account with this email already exists.';
+      case 'auth/invalid-email':
+        return 'Please enter a valid email address.';
+      case 'auth/weak-password':
+        return 'Password should be at least 6 characters long.';
+      case 'auth/user-not-found':
+        return 'No account found with this email address.';
+      case 'auth/wrong-password':
+        return 'Incorrect password.';
+      default:
+        return 'An error occurred. Please try again.';
+    }
   };
 
   return (
@@ -128,12 +175,12 @@ const AuthPage = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="profile-pic" className="text-gray-700">Profile Picture</Label>
+                <Label htmlFor="profile-pic" className="text-gray-700">Profile Picture (Optional)</Label>
                 <Input
                   id="profile-pic"
                   type="file"
                   accept="image/*"
-                  onChange={e => setProfilePic(e.target.files[0])}
+                  onChange={e => setProfilePic(e.target.files?.[0] || null)}
                   className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
                 />
               </div>
@@ -147,6 +194,9 @@ const AuthPage = () => {
                   className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
                 />
               </div>
+              {error && (
+                <div className="text-red-500 text-sm text-center">{error}</div>
+              )}
               <Button
                 onClick={handleCompleteProfile}
                 disabled={!name.trim() || uploading}
@@ -154,37 +204,15 @@ const AuthPage = () => {
               >
                 {uploading ? 'Saving...' : 'Get Started'}
               </Button>
-              {uploading && <div className="text-center text-sm text-gray-500">Uploading...</div>}
-            </div>
-          </>
-        ) : showOtp ? (
-          <>
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-green-400 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <MessageCircle className="w-10 h-10 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">Enter OTP</h2>
-              <p className="text-gray-600 mt-2">We sent a code to {phoneNumber || email}</p>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="otp" className="text-gray-700">Verification Code</Label>
-                <Input
-                  id="otp"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter 6-digit code"
-                  className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400 text-center text-xl tracking-widest"
-                  maxLength={6}
-                />
-              </div>
-              <Button
-                onClick={handleVerifyOtp}
-                disabled={otp.length !== 6}
-                className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
-              >
-                Verify & Continue
-              </Button>
+              {!isSignUp && (
+                <Button
+                  onClick={() => setShowProfile(false)}
+                  variant="ghost"
+                  className="w-full text-gray-600 hover:text-gray-800"
+                >
+                  Back to Sign In
+                </Button>
+              )}
             </div>
           </>
         ) : (
@@ -196,38 +224,26 @@ const AuthPage = () => {
               <h1 className="text-3xl font-bold text-gray-800">Welcome</h1>
               <p className="text-gray-600 mt-2">Sign in to start messaging</p>
             </div>
-            <Tabs defaultValue="phone" className="w-full">
+            
+            <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-8 bg-gray-100 rounded-xl">
-                <TabsTrigger value="phone" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Phone
+                <TabsTrigger 
+                  value="signin" 
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  onClick={() => setIsSignUp(false)}
+                >
+                  Sign In
                 </TabsTrigger>
-                <TabsTrigger value="email" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Email
+                <TabsTrigger 
+                  value="signup" 
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  onClick={() => setIsSignUp(true)}
+                >
+                  Sign Up
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="phone" className="space-y-6">
-                <div>
-                  <Label htmlFor="phone" className="text-gray-700">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                    className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
-                  />
-                </div>
-                <Button
-                  onClick={handleSendOtp}
-                  disabled={!phoneNumber}
-                  className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
-                >
-                  Send OTP
-                </Button>
-              </TabsContent>
-              <TabsContent value="email" className="space-y-6">
+              
+              <TabsContent value="signin" className="space-y-6">
                 <div>
                   <Label htmlFor="email" className="text-gray-700">Email Address</Label>
                   <Input
@@ -239,18 +255,66 @@ const AuthPage = () => {
                     className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="password" className="text-gray-700">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
+                  />
+                </div>
+                {error && (
+                  <div className="text-red-500 text-sm text-center">{error}</div>
+                )}
                 <Button
-                  onClick={handleSendOtp}
-                  disabled={!email}
+                  onClick={handleAuth}
+                  disabled={!email || !password || loading}
                   className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
                 >
-                  Send OTP
+                  {loading ? 'Signing In...' : 'Sign In'}
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="signup" className="space-y-6">
+                <div>
+                  <Label htmlFor="signup-email" className="text-gray-700">Email Address</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="signup-password" className="text-gray-700">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password (min 6 characters)"
+                    className="mt-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
+                  />
+                </div>
+                {error && (
+                  <div className="text-red-500 text-sm text-center">{error}</div>
+                )}
+                <Button
+                  onClick={handleAuth}
+                  disabled={!email || !password || password.length < 6 || loading}
+                  className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+                >
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </TabsContent>
             </Tabs>
           </>
         )}
-        <div id="recaptcha-container" style={{ display: 'none' }}></div>
       </Card>
     </div>
   );

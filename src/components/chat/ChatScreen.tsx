@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useChatStore } from '../../store/chatStore';
+import { useAuthStore } from '../../store/authStore';
 import { ArrowLeft, Phone, Video, Settings, Send, Mic, Camera, File, Smile, Paperclip, Image as ImageIcon } from 'lucide-react';
 import MessageBubble from './MessageBubble';
-import type { Message as MessageType } from './MessageBubble';
 import { formatDistanceToNow } from 'date-fns';
 import { db, storage } from '../../lib/firebase';
 import { ref as dbRef, push, onChildAdded } from 'firebase/database';
@@ -17,6 +17,8 @@ import { Grid } from '@giphy/react-components';
 import IGif from '@giphy/js-types/dist/gif';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import Peer from 'peerjs';
+import { Dialog as CallDialog, DialogContent as CallDialogContent, DialogTitle as CallDialogTitle, DialogDescription as CallDialogDescription } from '@/components/ui/dialog';
 
 // Add User type
 interface User {
@@ -27,6 +29,21 @@ interface User {
   avatar?: string;
 }
 
+// Add Message type
+interface Message {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: number;
+  type: 'text' | 'gif' | 'audio' | 'file';
+  status?: 'sent' | 'delivered' | 'read';
+  gifUrl?: string;
+  audioUrl?: string;
+  fileUrl?: string;
+  fileType?: string;
+  fileName?: string;
+}
+
 const GIPHY_API_KEY = 'WANkwV9BDnk1q9dAwHH6hJPW2TCxmEqc'; // TODO: Replace with your actual Giphy API key
 const gf = new GiphyFetch(GIPHY_API_KEY);
 
@@ -34,11 +51,11 @@ const ChatScreen = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { chats, messages, addMessage } = useChatStore();
+  const { user } = useAuthStore();
   const [newMessage, setNewMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [firebaseMessages, setFirebaseMessages] = useState<MessageType[]>([]);
+  const [firebaseMessages, setFirebaseMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const userId = localStorage.getItem('userId') || 'me';
   const [usersById, setUsersById] = useState<Record<string, User>>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
@@ -57,6 +74,18 @@ const ChatScreen = () => {
   const [pendingSend, setPendingSend] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [peer, setPeer] = useState<Peer | null>(null);
+  const [callDialogOpen, setCallDialogOpen] = useState(false);
+  const [incomingCallDialogOpen, setIncomingCallDialogOpen] = useState(false);
+  const [incomingCall, setIncomingCall] = useState<Peer.MediaConnection | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [callType, setCallType] = useState<'audio' | 'video'>('audio');
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const [callObj, setCallObj] = useState<Peer.MediaConnection | null>(null);
+  const [callStatus, setCallStatus] = useState<'idle' | 'connecting' | 'connected' | 'failed'>('idle');
+  const peerSetupRef = useRef(false);
 
   const chat = chats.find(c => c.id === id);
   const chatMessages = messages[id || ''] || [];
@@ -83,6 +112,128 @@ const ChatScreen = () => {
 
   useEffect(() => setIsMounted(true), []);
 
+  // Setup PeerJS on mount
+  useEffect(() => {
+    if (!user?.id || peerSetupRef.current) return;
+    
+    // Use userId as peer ID for coordination
+    const peerId = user.id;
+    
+    // Check if we already have a peer instance and destroy it
+    if (peer) {
+      peer.destroy();
+    }
+    
+    const p = new Peer(peerId, { 
+      debug: 1,
+      config: {
+        'iceServers': [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      }
+    });
+    
+    setPeer(p);
+    peerSetupRef.current = true;
+    
+    p.on('open', (id) => {
+      console.log('PeerJS connected with ID:', id);
+      // Store the actual peer ID in localStorage for coordination
+      localStorage.setItem('peerId', id);
+    });
+    
+    p.on('error', (err) => {
+      console.error('PeerJS error:', err);
+      // Handle different error types
+      if (err.type === 'peer-unavailable') {
+        console.log('Peer unavailable, this is normal for outgoing calls');
+      } else if (err.type === 'unavailable-id') {
+        console.log('ID already taken, trying with timestamp');
+        // If ID is taken, try with timestamp
+        const newPeerId = `${user.id}_${Date.now()}`;
+        const newPeer = new Peer(newPeerId, { 
+          debug: 1,
+          config: {
+            'iceServers': [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          }
+        });
+        setPeer(newPeer);
+      }
+    });
+    
+    p.on('call', (call) => {
+      console.log('Incoming call received from:', call.peer);
+      // Incoming call - show accept/reject dialog
+      setIncomingCall(call);
+      setCallType(call.metadata?.type === 'video' ? 'video' : 'audio');
+      setIncomingCallDialogOpen(true);
+    });
+    
+    return () => {
+      if (p) {
+        p.destroy();
+      }
+      peerSetupRef.current = false;
+    };
+  }, [user?.id]);
+
+  // Attach streams to video elements
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [localStream, remoteStream, callDialogOpen]);
+
+  const handleAcceptCall = async () => {
+    if (!incomingCall) return;
+    setIncomingCallDialogOpen(false);
+    setCallDialogOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: callType === 'video',
+        audio: true,
+      });
+      setLocalStream(stream);
+      incomingCall.answer(stream);
+      setCallObj(incomingCall);
+      incomingCall.on('stream', (remoteStream: MediaStream) => {
+        setRemoteStream(remoteStream);
+      });
+      incomingCall.on('close', () => {
+        setCallDialogOpen(false);
+        setRemoteStream(null);
+        setLocalStream(null);
+        setCallObj(null);
+      });
+    } catch (error) {
+      console.error('Error accepting call:', error);
+      setIncomingCallDialogOpen(false);
+    }
+  };
+
+  const handleRejectCall = () => {
+    if (incomingCall) {
+      incomingCall.close();
+    }
+    setIncomingCallDialogOpen(false);
+    setIncomingCall(null);
+  };
+
+  const handleEndCall = () => {
+    if (callObj) callObj.close();
+    setCallDialogOpen(false);
+    setRemoteStream(null);
+    setLocalStream(null);
+    setCallObj(null);
+  };
+
   if (!chat) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
@@ -97,9 +248,9 @@ const ChatScreen = () => {
   }
 
   const handleSendMessage = async () => {
-    if (newMessage.trim()) {
+    if (newMessage.trim() && user?.id) {
       const msg = {
-        senderId: userId,
+        senderId: user.id,
         text: newMessage.trim(),
         timestamp: Date.now(),
         type: 'text',
@@ -139,9 +290,9 @@ const ChatScreen = () => {
   };
 
   const handleGifSelect = async (gif: IGif) => {
-    if (!id) return;
+    if (!id || !user?.id) return;
     const msg = {
-      senderId: userId,
+      senderId: user.id,
       text: '',
       gifUrl: gif.images.fixed_height.url,
       timestamp: Date.now(),
@@ -236,7 +387,7 @@ const ChatScreen = () => {
     await uploadBytes(audioRef, audioBlob);
     const audioUrl = await getDownloadURL(audioRef);
     const msg = {
-      senderId: userId,
+      senderId: user?.id,
       text: '',
       audioUrl,
       timestamp: Date.now(),
@@ -264,7 +415,7 @@ const ChatScreen = () => {
       await uploadBytes(fileRef, file);
       const fileUrl = await getDownloadURL(fileRef);
       const msg = {
-        senderId: userId,
+        senderId: user?.id,
         text: '',
         fileUrl,
         fileName: file.name,
@@ -280,6 +431,74 @@ const ChatScreen = () => {
     setIsUploadingFile(false);
     setSelectedFile(null);
     if (e.target) e.target.value = '';
+  };
+
+  const handleStartCall = async (type: 'audio' | 'video') => {
+    if (!peer || !chat || chat.isGroup) return;
+    
+    try {
+      setCallType(type);
+      setCallStatus('connecting');
+      setCallDialogOpen(true);
+      const otherUserId = chat.otherUserId;
+      
+      console.log('Starting call to:', otherUserId);
+      console.log('Current peer ID:', peer.id);
+      
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: type === 'video',
+        audio: true,
+      });
+      setLocalStream(stream);
+      
+      const call = peer.call(otherUserId, stream, { metadata: { type } });
+      setCallObj(call);
+      
+      call.on('stream', (remoteStream: MediaStream) => {
+        console.log('Remote stream received');
+        setRemoteStream(remoteStream);
+        setCallStatus('connected');
+      });
+      
+      call.on('close', () => {
+        console.log('Call ended');
+        setCallStatus('idle');
+        setCallDialogOpen(false);
+        setRemoteStream(null);
+        setLocalStream(null);
+        setCallObj(null);
+      });
+      
+      call.on('error', (err) => {
+        console.error('Call error:', err);
+        setCallStatus('failed');
+        alert('Call failed. The other user might not be online or available.');
+        setCallDialogOpen(false);
+        setRemoteStream(null);
+        setLocalStream(null);
+        setCallObj(null);
+      });
+      
+      // Add a timeout to handle cases where the call doesn't connect
+      setTimeout(() => {
+        if (callStatus === 'connecting' && callObj === call) {
+          console.log('Call timeout - no response from peer');
+          setCallStatus('failed');
+          alert('Call timed out. The other user might not be online.');
+          call.close();
+          setCallDialogOpen(false);
+          setRemoteStream(null);
+          setLocalStream(null);
+          setCallObj(null);
+        }
+      }, 15000); // 15 second timeout
+      
+    } catch (error) {
+      console.error('Error starting call:', error);
+      setCallStatus('failed');
+      alert('Failed to start call. Please check your camera/microphone permissions.');
+      setCallDialogOpen(false);
+    }
   };
 
   return (
@@ -323,10 +542,10 @@ const ChatScreen = () => {
             </div>
 
             <div className="flex space-x-2">
-              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100">
+              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100" onClick={() => handleStartCall('audio')} disabled={chat.isGroup} title={chat.isGroup ? 'Calls only available in 1:1 chats' : 'Start voice call'}>
                 <Phone className="w-5 h-5 text-green-600" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100">
+              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100" onClick={() => handleStartCall('video')} disabled={chat.isGroup} title={chat.isGroup ? 'Calls only available in 1:1 chats' : 'Start video call'}>
                 <Video className="w-5 h-5 text-blue-600" />
               </Button>
               <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100">
@@ -342,7 +561,7 @@ const ChatScreen = () => {
               key={message.id}
               message={message}
               chat={chat}
-              currentUserId={userId}
+              currentUserId={user?.id}
               usersById={usersById}
             />
           ))}
@@ -464,6 +683,69 @@ const ChatScreen = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <CallDialog open={callDialogOpen} onOpenChange={setCallDialogOpen}>
+        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full">
+          <CallDialogTitle>{callType === 'video' ? 'Video Call' : 'Voice Call'}</CallDialogTitle>
+          <CallDialogDescription>
+            {callStatus === 'connecting' && 'Connecting...'}
+            {callStatus === 'connected' && (callType === 'video' ? 'Video call in progress' : 'Voice call in progress')}
+            {callStatus === 'failed' && 'Call failed'}
+          </CallDialogDescription>
+          <div className="w-full flex flex-col items-center">
+            <div className="flex flex-col items-center space-y-2 w-full">
+              {callType === 'video' ? (
+                <>
+                  <video ref={localVideoRef} autoPlay muted playsInline className="w-32 h-32 bg-black rounded-lg border" />
+                  <video ref={remoteVideoRef} autoPlay playsInline className="w-48 h-48 bg-black rounded-lg border" />
+                </>
+              ) : (
+                <>
+                  <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                    <Phone className="w-10 h-10 text-green-600" />
+                  </div>
+                  <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                    <Avatar className="w-16 h-16">
+                      <AvatarImage src={displayAvatar} />
+                      <AvatarFallback>{(displayName || '').charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </div>
+                </>
+              )}
+            </div>
+            {callStatus === 'connecting' && (
+              <div className="mt-4 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                <p className="text-sm text-gray-600 mt-2">Connecting to {displayName}...</p>
+              </div>
+            )}
+            <Button onClick={handleEndCall} className="mt-4 bg-red-500 hover:bg-red-600 text-white">End Call</Button>
+          </div>
+        </CallDialogContent>
+      </CallDialog>
+      <CallDialog open={incomingCallDialogOpen} onOpenChange={setIncomingCallDialogOpen}>
+        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full">
+          <CallDialogTitle>Incoming {callType === 'video' ? 'Video' : 'Voice'} Call</CallDialogTitle>
+          <CallDialogDescription>
+            {displayName} is calling you...
+          </CallDialogDescription>
+          <div className="w-full flex flex-col items-center space-y-4">
+            <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center">
+              <Avatar className="w-16 h-16">
+                <AvatarImage src={displayAvatar} />
+                <AvatarFallback>{(displayName || '').charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="flex space-x-4">
+              <Button onClick={handleAcceptCall} className="bg-green-500 hover:bg-green-600 text-white px-6">
+                Accept
+              </Button>
+              <Button onClick={handleRejectCall} className="bg-red-500 hover:bg-red-600 text-white px-6">
+                Reject
+              </Button>
+            </div>
+          </div>
+        </CallDialogContent>
+      </CallDialog>
     </div>
   );
 };

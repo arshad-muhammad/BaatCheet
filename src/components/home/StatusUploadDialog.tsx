@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { storage, db } from '../../lib/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ref as dbRef, push, set } from 'firebase/database';
+import { useAuthStore } from '../../store/authStore';
 
 interface StatusUploadDialogProps {
   open: boolean;
@@ -17,8 +18,7 @@ const StatusUploadDialog: React.FC<StatusUploadDialogProps> = ({ open, onOpenCha
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const userId = localStorage.getItem('userId');
+  const { user } = useAuthStore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0] || null;
@@ -32,7 +32,7 @@ const StatusUploadDialog: React.FC<StatusUploadDialogProps> = ({ open, onOpenCha
   };
 
   const handleUpload = async () => {
-    if (!file || !userId) {
+    if (!file || !user?.id) {
       setError('No file selected or user not logged in.');
       return;
     }
@@ -40,19 +40,19 @@ const StatusUploadDialog: React.FC<StatusUploadDialogProps> = ({ open, onOpenCha
     setError(null);
     try {
       const ext = file.name.split('.').pop();
-      const statusId = push(dbRef(db, `status/${userId}`)).key;
+      const statusId = push(dbRef(db, `status/${user.id}`)).key;
       if (!statusId) {
         throw new Error('Failed to generate status ID');
       }
       
-      const fileRef = storageRef(storage, `status/${userId}/${statusId}.${ext}`);
+      const fileRef = storageRef(storage, `status/${user.id}/${statusId}.${ext}`);
       await uploadBytes(fileRef, file);
       const mediaURL = await getDownloadURL(fileRef);
       const timestamp = Date.now();
       
-      await set(dbRef(db, `status/${userId}/${statusId}`), {
+      await set(dbRef(db, `status/${user.id}/${statusId}`), {
         mediaURL,
-        userId,
+        userId: user.id,
         timestamp,
         type: file.type.startsWith('video') ? 'video' : 'image',
       });

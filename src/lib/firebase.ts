@@ -78,27 +78,26 @@ export async function fetchAllUsers() {
   const users = [];
   if (snap.exists()) {
     const val = snap.val();
-    if (val.name) {
-      users.push({
-        id: val.uid || val.phone || 'unknown',
-        name: val.name || '',
-        avatar: val.photoURL || '',
-        email: val.email || '',
-        phone: val.phone || '',
-      });
-    } else {
-      // Otherwise, treat as a map of userId -> userObj
+    console.log('fetchAllUsers raw data:', val);
+    
+    // Check if val is an object with user IDs as keys
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      // Iterate through all user IDs
       for (const uid in val) {
-        users.push({
-          id: uid, // always use UID as id
-          name: val[uid].name || '',
-          avatar: val[uid].photoURL || '',
-          email: val[uid].email || '',
-          phone: val[uid].phone || '',
-        });
+        const userData = val[uid];
+        if (userData && typeof userData === 'object') {
+          users.push({
+            id: uid, // always use UID as id
+            name: userData.name || '',
+            avatar: userData.photoURL || userData.avatar || '',
+            email: userData.email || '',
+            phone: userData.phone || '',
+          });
+        }
       }
     }
   }
+  console.log('fetchAllUsers returning:', users);
   return users;
 }
 
@@ -106,15 +105,33 @@ export async function fetchAllUsers() {
  * Fetch invitations received by the user.
  */
 export async function fetchReceivedInvitations(userId) {
+  console.log('=== fetchReceivedInvitations DEBUG ===');
+  console.log('Called with userId:', userId);
+  console.log('Querying path: chatInvitations/' + userId);
+  
   const refInv = dbRef(db, `chatInvitations/${userId}`);
   const snap = await get(refInv);
+  
+  console.log('Snapshot exists:', snap.exists());
+  console.log('Snapshot value:', snap.val());
+  console.log('Snapshot value type:', typeof snap.val());
+  
   const invitations = [];
   if (snap.exists()) {
     const val = snap.val();
+    console.log('Val type:', typeof val);
+    console.log('Val keys:', Object.keys(val));
+    
     for (const id in val) {
-      invitations.push({ id, ...val[id] });
+      const invitation = { id, ...val[id] };
+      console.log('Processing invitation with ID:', id);
+      console.log('Invitation data:', invitation);
+      invitations.push(invitation);
     }
   }
+  
+  console.log('Returning invitations:', invitations);
+  console.log('Number of invitations:', invitations.length);
   return invitations;
 }
 
@@ -122,21 +139,38 @@ export async function fetchReceivedInvitations(userId) {
  * Fetch invitations sent by the user.
  */
 export async function fetchSentInvitations(userId) {
+  console.log('=== fetchSentInvitations DEBUG ===');
+  console.log('Called with userId:', userId);
+  
   // Scan all invitations for all users and filter by from === userId
   const refInv = dbRef(db, 'chatInvitations');
   const snap = await get(refInv);
+  
+  console.log('All invitations snapshot exists:', snap.exists());
+  console.log('All invitations data:', snap.val());
+  
   const invitations = [];
   if (snap.exists()) {
     const all = snap.val();
     for (const recipientId in all) {
       for (const invId in all[recipientId]) {
         const inv = all[recipientId][invId];
+        console.log('Checking invitation:', invId, 'from:', inv.from, 'to:', inv.to, 'recipientId:', recipientId);
         if (inv.from === userId) {
-          invitations.push({ id: invId, recipientId, ...inv });
+          const invitation = { 
+            id: invId, 
+            recipientId: inv.to || recipientId, // Use 'to' field if available, fallback to recipientId
+            ...inv 
+          };
+          console.log('Found sent invitation:', invitation);
+          invitations.push(invitation);
         }
       }
     }
   }
+  
+  console.log('Returning sent invitations:', invitations);
+  console.log('Number of sent invitations:', invitations.length);
   return invitations;
 }
 
@@ -380,4 +414,20 @@ export async function fetchAcceptedContacts(userId: string) {
     console.error('Error fetching accepted contacts:', error);
     return [];
   }
+}
+
+/**
+ * Test function to check if an invitation exists in the database
+ */
+export async function testInvitationExists(recipientId, invitationId) {
+  console.log('=== TESTING INVITATION EXISTS ===');
+  console.log('Checking for invitation:', invitationId, 'for recipient:', recipientId);
+  
+  const invRef = dbRef(db, `chatInvitations/${recipientId}/${invitationId}`);
+  const snap = await get(invRef);
+  
+  console.log('Invitation exists:', snap.exists());
+  console.log('Invitation data:', snap.val());
+  
+  return snap.exists();
 } 

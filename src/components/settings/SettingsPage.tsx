@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -77,7 +76,7 @@ const SettingsPage = () => {
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center space-x-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src={user?.avatar} />
+              <AvatarImage src={user?.photoURL || user?.avatar} />
               <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white text-xl">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>

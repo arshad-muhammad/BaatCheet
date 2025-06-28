@@ -80,6 +80,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         text: 'Hey! How are you doing?',
         timestamp: new Date(Date.now() - 1000 * 60 * 5),
         status: 'delivered',
+        isStarred: true,
       },
       {
         id: '2',
@@ -87,6 +88,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
         text: 'I\'m doing great! Just working on some projects.',
         timestamp: new Date(Date.now() - 1000 * 60 * 3),
         status: 'read',
+      },
+    ],
+    '2': [
+      {
+        id: '3',
+        senderId: 'user2',
+        text: 'Meeting at 3 PM today',
+        timestamp: new Date(Date.now() - 1000 * 60 * 30),
+        status: 'read',
+        isStarred: true,
+      },
+    ],
+    '3': [
+      {
+        id: '4',
+        senderId: 'user3',
+        text: 'Thanks for the help!',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
+        status: 'read',
+        isStarred: true,
       },
     ],
   },

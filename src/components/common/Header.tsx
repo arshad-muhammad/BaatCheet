@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,7 +18,7 @@ const Header = () => {
               className="w-10 h-10 cursor-pointer" 
               onClick={() => navigate('/profile')}
             >
-              <AvatarImage src={user?.avatar} />
+              <AvatarImage src={user?.photoURL || user?.avatar} />
               <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white text-sm">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>

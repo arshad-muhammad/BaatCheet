@@ -25,7 +25,7 @@ const ProfilePage = () => {
     if (!user) return;
     setUploading(true);
     setError(null);
-    let photoURL = user.avatar || '';
+    let photoURL = user.photoURL || '';
     try {
       if (profilePic) {
         const picRef = storageRef(storage, `profile_pics/${user.id}`);
@@ -39,7 +39,7 @@ const ProfilePage = () => {
         email: user.email || '',
         photoURL,
       });
-      updateProfile({ name, status, avatar: photoURL });
+      updateProfile({ name, status, photoURL });
       setIsEditing(false);
       setProfilePic(null);
     } catch (err: unknown) {
@@ -56,7 +56,7 @@ const ProfilePage = () => {
     await signOut(auth);
     logout();
     localStorage.removeItem('userId');
-    navigate('/auth');
+    navigate('/');
   };
 
   const handleCancel = () => {
@@ -121,7 +121,7 @@ const ProfilePage = () => {
         <div className="p-8 text-center border-b border-gray-100">
           <div className="relative inline-block">
             <Avatar className="w-32 h-32 mx-auto">
-              <AvatarImage src={profilePic ? URL.createObjectURL(profilePic) : user?.avatar} />
+              <AvatarImage src={profilePic ? URL.createObjectURL(profilePic) : user?.photoURL || user?.avatar} />
               <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white text-4xl">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>

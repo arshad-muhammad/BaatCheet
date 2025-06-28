@@ -8,6 +8,7 @@ import StatusUploadDialog from '../home/StatusUploadDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useChatStore } from '../../store/chatStore';
+import { useAuthStore } from '../../store/authStore';
 import { useToast } from '@/hooks/use-toast';
 import { fetchAllUsers, fetchAcceptedContacts } from '@/lib/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -30,6 +31,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
   const { chats, setChats } = useChatStore();
+  const { user } = useAuthStore();
   const { toast } = useToast();
   const [allUsers, setAllUsers] = useState([]);
   const [acceptedContacts, setAcceptedContacts] = useState([]);
@@ -83,9 +85,8 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
     setGroupDialogOpen(true);
     setIsOpen(false);
     // Fetch accepted contacts for group creation
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      const contacts = await fetchAcceptedContacts(userId);
+    if (user?.id) {
+      const contacts = await fetchAcceptedContacts(user.id);
       setAcceptedContacts(contacts);
     }
   };
@@ -119,11 +120,10 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
   const uploadGroupIcon = async (): Promise<string> => {
     if (!groupIconFile) return groupIcon;
     
-    const userId = localStorage.getItem('userId');
-    if (!userId) throw new Error('User not authenticated');
+    if (!user?.id) throw new Error('User not authenticated');
     
     const fileExt = groupIconFile.name.split('.').pop();
-    const fileName = `group-icons/${userId}_${Date.now()}.${fileExt}`;
+    const fileName = `group-icons/${user.id}_${Date.now()}.${fileExt}`;
     const fileRef = storageRef(storage, fileName);
     
     await uploadBytes(fileRef, groupIconFile);
@@ -134,9 +134,8 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
   const submitNewGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
-    const userId = localStorage.getItem('userId');
     
-    if (!userId || !groupName.trim()) {
+    if (!user?.id || !groupName.trim()) {
       setCreating(false);
       toast({ title: 'Error', description: 'Group name is required', variant: 'destructive' });
       return;
@@ -156,7 +155,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
       }
 
       // Add current user to members if not already included
-      const members = selectedMembers.includes(userId) ? selectedMembers : [...selectedMembers, userId];
+      const members = selectedMembers.includes(user.id) ? selectedMembers : [...selectedMembers, user.id];
       
       const newGroupRef = push(dbRef(db, 'groups'));
       const groupId = newGroupRef.key;
@@ -167,7 +166,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
         icon: iconUrl,
         members,
         createdAt: serverTimestamp(),
-        createdBy: userId,
+        createdBy: user.id,
       });
       
       await set(dbRef(db, `groupChats/${groupId}/messages`), {});
@@ -226,24 +225,32 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
 
   const sendChatInvitation = async (recipientId) => {
     setSendingInvite(true);
-    const userId = localStorage.getItem('userId');
-    if (!userId || !recipientId) {
+    if (!user?.id || !recipientId) {
       setSendingInvite(false);
       toast({ title: 'Error', description: 'Invalid user', variant: 'destructive' });
       return;
     }
     try {
-      const invitationId = `${userId}_${recipientId}`;
+      const invitationId = `${user.id}_${recipientId}`;
+      console.log('Sending invitation:', {
+        from: user.id,
+        to: recipientId,
+        invitationId: invitationId,
+        path: `chatInvitations/${recipientId}/${invitationId}`
+      });
       await set(dbRef(db, `chatInvitations/${recipientId}/${invitationId}`), {
-        from: userId,
+        from: user.id,
+        to: recipientId,
         type: 'chat',
         status: 'pending',
         createdAt: Date.now(),
       });
+      console.log('Invitation sent successfully');
       setSendingInvite(false);
       setChatDialogOpen(false);
       toast({ title: 'Invitation sent', description: 'Invitation sent successfully!' });
     } catch (err) {
+      console.error('Error sending invitation:', err);
       setSendingInvite(false);
       toast({ title: 'Error', description: 'Failed to send invitation', variant: 'destructive' });
     }
@@ -320,18 +327,18 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
               (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase())) ||
               (u.phone && u.phone.toLowerCase().includes(userSearch.toLowerCase())) ||
               u.id.toLowerCase().includes(userSearch.toLowerCase())
-            )).map(user => (
-              <div key={user.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100">
-                <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+            )).map(userItem => (
+              <div key={userItem.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100">
+                <img src={userItem.photoURL || userItem.avatar} alt={userItem.name} className="w-8 h-8 rounded-full object-cover" />
                 <div className="flex-1 min-w-0">
-                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate font-medium">{userItem.name}</span>
                   <div className="text-xs text-gray-500 truncate">
-                    {user.email && <span>{user.email}</span>}
-                    {user.email && user.phone && <span> &middot; </span>}
-                    {user.phone && <span>{user.phone}</span>}
+                    {userItem.email && <span>{userItem.email}</span>}
+                    {userItem.email && userItem.phone && <span> &middot; </span>}
+                    {userItem.phone && <span>{userItem.phone}</span>}
                   </div>
                 </div>
-                <Button size="sm" disabled={sendingInvite} onClick={() => sendChatInvitation(user.id)}>
+                <Button size="sm" disabled={sendingInvite} onClick={() => sendChatInvitation(userItem.id)}>
                   {sendingInvite ? 'Sending...' : 'Invite'}
                 </Button>
               </div>
@@ -419,7 +426,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
                       onClick={() => toggleMember(user.id)}
                     >
                       <Avatar className="w-8 h-8">
-                        <AvatarImage src={user.avatar} />
+                        <AvatarImage src={user.photoURL || user.avatar} />
                         <AvatarFallback className="text-xs">
                           {user.name?.charAt(0).toUpperCase() || '?'}
                         </AvatarFallback>
@@ -457,7 +464,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
                     return (
                       <Badge key={memberId} variant="secondary" className="flex items-center space-x-1">
                         <Avatar className="w-4 h-4">
-                          <AvatarImage src={user?.avatar} />
+                          <AvatarImage src={user?.photoURL || user?.avatar} />
                           <AvatarFallback className="text-xs">
                             {user?.name?.charAt(0).toUpperCase() || '?'}
                           </AvatarFallback>
