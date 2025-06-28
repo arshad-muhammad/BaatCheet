@@ -35,9 +35,10 @@ interface MessageBubbleProps {
     avatar?: string;
   }>;
   chatId: string;
+  fontSize?: 'small' | 'medium' | 'large';
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUserId, usersById, chatId }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUserId, usersById, chatId, fontSize }) => {
   const { toggleStar } = useChatStore();
   const isOwnMessage = message.senderId === currentUserId;
   const isGroup = chat.isGroup;
@@ -197,7 +198,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
               <span className="sr-only">Voice message</span>
             </div>
           ) : (
-            <p className="text-sm leading-relaxed whitespace-pre-line font-medium">{message.text}</p>
+            <p className={`leading-relaxed whitespace-pre-line font-medium ${fontSize === 'small' ? 'text-xs' : fontSize === 'large' ? 'text-lg' : 'text-sm'}`}>{message.text}</p>
           )}
           <div className={`flex items-center justify-end space-x-1 mt-2 ${
             isOwnMessage ? 'text-orange-600' : 'text-purple-600'

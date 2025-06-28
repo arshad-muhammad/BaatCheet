@@ -124,6 +124,50 @@ const ChatScreen = () => {
     return {};
   };
 
+  // Get font size class based on settings
+  const getFontSizeClass = () => {
+    switch (chatSettings?.fontSize) {
+      case 'small':
+        return 'text-xs';
+      case 'large':
+        return 'text-lg';
+      case 'medium':
+      default:
+        return 'text-sm';
+    }
+  };
+
+  // Get chat theme class based on settings
+  const getChatThemeClass = () => {
+    switch (chatSettings?.chatTheme) {
+      case 'dark':
+        return 'dark';
+      case 'custom':
+        return 'custom-theme';
+      case 'default':
+      default:
+        return '';
+    }
+  };
+
+  // Get chat theme styles
+  const getChatThemeStyles = () => {
+    switch (chatSettings?.chatTheme) {
+      case 'dark':
+        return {
+          backgroundColor: '#1a1a1a',
+          color: '#ffffff'
+        };
+      case 'custom':
+        return {
+          backgroundColor: '#f8f9fa',
+          color: '#2d3748'
+        };
+      default:
+        return {};
+    }
+  };
+
   useEffect(() => {
     if (!id) return;
     const messagesRef = dbRef(db, `chats/${id}/messages`);
@@ -736,7 +780,10 @@ const ChatScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+    <div 
+      className={`min-h-screen bg-gradient-to-br from-yellow-100 via-amber-100 to-orange-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden ${getChatThemeClass()}`}
+      style={getChatThemeStyles()}
+    >
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-yellow-400 to-amber-400 dark:from-yellow-500/20 dark:to-amber-500/20 rounded-full opacity-15 animate-desi-float"></div>
@@ -843,6 +890,7 @@ const ChatScreen = () => {
               currentUserId={user?.id}
               usersById={usersById}
               chatId={id || ''}
+              fontSize={chatSettings?.fontSize}
             />
           ))}
           <div ref={messagesEndRef} />

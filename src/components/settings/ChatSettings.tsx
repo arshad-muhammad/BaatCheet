@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSettingsStore } from '../../store/settingsStore';
 import { ArrowLeft, MessageSquare, Send, Download, Database, Type, Palette, Image } from 'lucide-react';
+import WallpaperPicker from '../chat/WallpaperPicker';
 
 const ChatSettings = () => {
   const navigate = useNavigate();
   const { chat, updateChat } = useSettingsStore();
+  const [showWallpaperPicker, setShowWallpaperPicker] = useState(false);
 
   const handleToggle = (key: keyof typeof chat) => {
     if (typeof chat[key] === 'boolean') {
@@ -133,7 +135,7 @@ const ChatSettings = () => {
           </div>
 
           {/* Chat Theme */}
-          <div className="bg-gradient-to-r from-indigo-50/80 to-blue-50/80 dark:from-indigo-900/20 dark:to-blue-900/20 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-indigo-200/50 dark:border-indigo-700/50">
+          {/* <div className="bg-gradient-to-r from-indigo-50/80 to-blue-50/80 dark:from-indigo-900/20 dark:to-blue-900/20 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-indigo-200/50 dark:border-indigo-700/50">
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900 dark:to-blue-900 rounded-full flex items-center justify-center ring-2 ring-indigo-200 dark:ring-indigo-600 shadow-lg">
@@ -155,7 +157,7 @@ const ChatSettings = () => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </div> */}
 
           {/* Wallpapers */}
           <div className="bg-gradient-to-r from-pink-50/80 to-rose-50/80 dark:from-pink-900/20 dark:to-rose-900/20 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-pink-200/50 dark:border-pink-700/50">
@@ -170,6 +172,7 @@ const ChatSettings = () => {
               <Button 
                 variant="outline" 
                 size="sm"
+                onClick={() => setShowWallpaperPicker(true)}
                 className="border-pink-300 dark:border-pink-600 text-pink-700 dark:text-pink-300 hover:bg-pink-100 dark:hover:bg-pink-900"
               >
                 Choose
@@ -178,6 +181,12 @@ const ChatSettings = () => {
           </div>
         </div>
       </div>
+
+      {/* Wallpaper Picker Dialog */}
+      <WallpaperPicker 
+        open={showWallpaperPicker} 
+        onOpenChange={setShowWallpaperPicker} 
+      />
     </div>
   );
 };
