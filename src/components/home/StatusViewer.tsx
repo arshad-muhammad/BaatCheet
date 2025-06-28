@@ -7,6 +7,7 @@ import { db, storage } from '../../lib/firebase';
 import { ref as dbRef, remove } from 'firebase/database';
 import { ref as storageRef, deleteObject } from 'firebase/storage';
 import { formatDistanceToNow } from 'date-fns';
+import { useAuthStore } from '../../store/authStore';
 
 interface StatusItem {
   id: string;
@@ -17,27 +18,26 @@ interface StatusItem {
 }
 
 interface StatusViewerProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
   statuses: StatusItem[];
   currentIndex: number;
-  onStatusChange: (index: number) => void;
+  onIndexChange: (index: number) => void;
   onStatusDelete?: (statusId: string) => void;
-  currentUserId: string;
 }
 
 const StatusViewer: React.FC<StatusViewerProps> = ({
-  open,
-  onOpenChange,
+  isOpen,
+  onClose,
   statuses,
   currentIndex,
-  onStatusChange,
+  onIndexChange,
   onStatusDelete,
-  currentUserId,
 }) => {
   const [currentStatus, setCurrentStatus] = useState<StatusItem | null>(null);
   const [userInfo, setUserInfo] = useState<{ name: string; avatar: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     if (statuses.length > 0 && currentIndex >= 0 && currentIndex < statuses.length) {
@@ -65,15 +65,15 @@ const StatusViewer: React.FC<StatusViewerProps> = ({
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      onStatusChange(currentIndex - 1);
+      onIndexChange(currentIndex - 1);
     }
   };
 
   const handleNext = () => {
     if (currentIndex < statuses.length - 1) {
-      onStatusChange(currentIndex + 1);
+      onIndexChange(currentIndex + 1);
     } else {
-      onOpenChange(false);
+      onClose();
     }
   };
 
@@ -94,13 +94,13 @@ const StatusViewer: React.FC<StatusViewerProps> = ({
       
       // Close viewer if no more statuses
       if (statuses.length <= 1) {
-        onOpenChange(false);
+        onClose();
       } else {
         // Move to next status or previous
         if (currentIndex < statuses.length - 1) {
-          onStatusChange(currentIndex);
+          onIndexChange(currentIndex);
         } else if (currentIndex > 0) {
-          onStatusChange(currentIndex - 1);
+          onIndexChange(currentIndex - 1);
         }
       }
     } catch (error) {
@@ -110,10 +110,10 @@ const StatusViewer: React.FC<StatusViewerProps> = ({
     }
   };
 
-  const canDelete = currentStatus?.userId === currentUserId;
+  const canDelete = currentStatus?.userId === user?.id;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-none w-full h-full p-0 bg-black">
         <DialogTitle className="sr-only">Status Viewer</DialogTitle>
         <DialogDescription className="sr-only">View status updates from {userInfo?.name || 'user'}</DialogDescription>
@@ -151,7 +151,7 @@ const StatusViewer: React.FC<StatusViewerProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onOpenChange(false)}
+                  onClick={onClose}
                   className="text-white hover:bg-white/20"
                 >
                   <X className="w-4 h-4" />

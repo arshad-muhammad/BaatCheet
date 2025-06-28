@@ -153,34 +153,37 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
   };
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-orange-200/30">
       {/* Received Invitations */}
       {pendingReceivedInv.length > 0 && (
-        <div className="bg-yellow-50 border-b border-yellow-200">
-          <div className="px-4 py-2 bg-yellow-100 text-yellow-800 text-sm font-medium">
-            Received Invitations ({pendingReceivedInv.length})
+        <div className="bg-gradient-to-r from-yellow-50/80 to-orange-50/80 border-b border-yellow-200/50">
+          <div className="px-4 py-3 bg-gradient-to-r from-yellow-100/90 to-orange-100/90 text-yellow-800 text-sm font-bold border-b border-yellow-200/50">
+            <span className="flex items-center">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
+              Received Invitations ({pendingReceivedInv.length})
+            </span>
           </div>
           {pendingReceivedInv.map(inv => {
             const senderUser = usersById[inv.from];
             console.log('Rendering received invitation:', inv, 'sender user:', senderUser);
             return (
-              <div key={inv.id} className="p-4 flex items-center space-x-3">
-                <Avatar className="w-12 h-12">
+              <div key={inv.id} className="p-4 flex items-center space-x-3 hover:bg-yellow-50/50 transition-all duration-300">
+                <Avatar className="w-12 h-12 ring-2 ring-yellow-200 hover:ring-orange-300 transition-all duration-300">
                   <AvatarImage src={senderUser?.photoURL || senderUser?.avatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-400 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-yellow-400 to-orange-400 text-white font-bold">
                     {(senderUser?.name || inv.from || '?').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900">
+                  <div className="font-bold text-orange-800">
                     {senderUser?.name || senderUser?.email || inv.from || 'Unknown User'}
                   </div>
-                  <div className="text-xs text-gray-500">wants to chat with you</div>
+                  <div className="text-xs text-orange-600 font-medium">wants to chat with you</div>
                 </div>
                 <div className="flex space-x-2">
                   <Button 
                     size="sm" 
-                    className="bg-green-500 hover:bg-green-600 text-white" 
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold shadow-lg hover:scale-105 transition-all duration-300" 
                     onClick={() => handleAccept(inv.id)}
                   >
                     Accept
@@ -188,6 +191,7 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
                   <Button 
                     size="sm" 
                     variant="destructive" 
+                    className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 font-bold shadow-lg hover:scale-105 transition-all duration-300"
                     onClick={() => handleReject(inv.id)}
                   >
                     Reject
@@ -200,30 +204,33 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
       )}
       {/* Sent Invitations */}
       {pendingSentInv.length > 0 && (
-        <div className="bg-blue-50 border-b border-blue-200">
-          <div className="px-4 py-2 bg-blue-100 text-blue-800 text-sm font-medium">
-            Sent Invitations ({pendingSentInv.length})
+        <div className="bg-gradient-to-r from-blue-50/80 to-purple-50/80 border-b border-blue-200/50">
+          <div className="px-4 py-3 bg-gradient-to-r from-blue-100/90 to-purple-100/90 text-blue-800 text-sm font-bold border-b border-blue-200/50">
+            <span className="flex items-center">
+              <div className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
+              Sent Invitations ({pendingSentInv.length})
+            </span>
           </div>
           {pendingSentInv.map(inv => {
             const recipientUser = usersById[inv.recipientId];
             console.log('Rendering sent invitation:', inv, 'recipient user:', recipientUser);
             return (
-              <div key={inv.id} className="p-4 flex items-center space-x-3">
-                <Avatar className="w-12 h-12">
+              <div key={inv.id} className="p-4 flex items-center space-x-3 hover:bg-blue-50/50 transition-all duration-300">
+                <Avatar className="w-12 h-12 ring-2 ring-blue-200 hover:ring-purple-300 transition-all duration-300">
                   <AvatarImage src={recipientUser?.photoURL || recipientUser?.avatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-400 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-400 text-white font-bold">
                     {(recipientUser?.name || inv.recipientId || '?').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900">
+                  <div className="font-bold text-blue-800">
                     {recipientUser?.name || recipientUser?.email || inv.recipientId || 'Unknown User'}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-blue-600 font-medium">
                     Invitation: {inv.status || 'pending'}
                   </div>
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-blue-500 font-medium bg-blue-100/50 px-3 py-1 rounded-full">
                   Waiting for response...
                 </div>
               </div>
@@ -248,7 +255,7 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
         return (
           <div
             key={chat.id}
-            className="p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-200 relative group flex items-center"
+            className="p-4 hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-pink-50/50 cursor-pointer transition-all duration-300 relative group flex items-center border-b border-orange-100/30"
           >
             <div
               onClick={() => handleChatClick(chat.id)}
@@ -256,17 +263,17 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
             >
               {/* Avatar with online indicator */}
               <div className="relative">
-                <Avatar className="w-12 h-12">
+                <Avatar className="w-12 h-12 ring-2 ring-orange-200 hover:ring-pink-300 transition-all duration-300 group-hover:scale-110">
                   <AvatarImage src={displayAvatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-orange-400 via-pink-400 to-purple-400 text-white font-bold">
                     {(displayName || '').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {!chat.isGroup && chat.isOnline && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full animate-pulse"></div>
                 )}
                 {chat.isGroup && (
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gray-500 rounded-full flex items-center justify-center">
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg">
                     <Users className="w-3 h-3 text-white" />
                   </div>
                 )}
@@ -275,63 +282,63 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <h3 className="font-medium text-gray-900 truncate">
+                    <h3 className="font-bold text-orange-800 truncate">
                       {displayName || 'Unknown'}
                     </h3>
                     {chat.isPinned && (
-                      <Pin className="w-4 h-4 text-gray-400 transform rotate-45" />
+                      <Pin className="w-4 h-4 text-orange-500 transform rotate-45" />
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
                     {chat.lastMessageTime && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-orange-600/70 font-medium">
                         {formatDistanceToNow(chat.lastMessageTime, { addSuffix: false })}
                       </span>
                     )}
                     {chat.unreadCount > 0 && (
-                      <Badge className="bg-green-500 text-white text-xs px-2 py-1">
+                      <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs px-2 py-1 font-bold shadow-lg animate-pulse">
                         {chat.unreadCount}
                       </Badge>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center mt-1">
-                  <CheckCheck className="w-4 h-4 text-blue-500 mr-1" />
-                  <p className="text-sm text-gray-600 truncate">
+                  <CheckCheck className="w-4 h-4 text-pink-500 mr-1" />
+                  <p className="text-sm text-orange-700/80 truncate font-medium">
                     {chat.lastMessage || 'No messages yet'}
                   </p>
                 </div>
               </div>
             </div>
             {/* Pin and Delete buttons on hover */}
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 flex space-x-2">
               <button
-                className="p-1 hover:bg-gray-200 rounded-full"
+                className="p-2 hover:bg-orange-200/50 rounded-full transition-all duration-300 hover:scale-110"
                 title="Pin chat"
                 // Add your pin logic here
               >
-                <Pin className="w-4 h-4 text-gray-500" />
+                <Pin className="w-4 h-4 text-orange-500" />
               </button>
               <AlertDialog open={deleteDialogOpen && chatToDelete === chat.id} onOpenChange={open => { setDeleteDialogOpen(open); if (!open) setChatToDelete(null); }}>
                 <AlertDialogTrigger asChild>
                   <button
-                    className="p-1 hover:bg-red-100 rounded-full text-red-600"
+                    className="p-2 hover:bg-red-200/50 rounded-full text-red-500 transition-all duration-300 hover:scale-110"
                     onClick={e => { e.stopPropagation(); setChatToDelete(chat.id); setDeleteDialogOpen(true); }}
                     title="Delete chat"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="bg-white/95 backdrop-blur-md border border-orange-200/50">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Chat</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogTitle className="text-orange-800">Delete Chat</AlertDialogTitle>
+                    <AlertDialogDescription className="text-orange-600">
                       Are you sure you want to delete this chat? This will remove all messages and cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteChat}>Delete</AlertDialogAction>
+                    <AlertDialogCancel className="bg-orange-100 text-orange-700 hover:bg-orange-200">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteChat} className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600">Delete</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -342,20 +349,20 @@ const ChatList: React.FC<ChatListProps> = ({ searchQuery }) => {
 
       {filteredChats.length === 0 && pendingReceivedInv.length === 0 && pendingSentInv.length === 0 && (
         <div className="p-8 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <MessageCircle className="w-8 h-8 text-gray-400" />
+          <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-pink-100 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
+            <MessageCircle className="w-10 h-10 text-orange-500" />
           </div>
-          <h3 className="text-lg font-medium text-gray-600 mb-2">
+          <h3 className="text-xl font-bold text-orange-800 mb-3">
             {searchQuery ? 'No chats found' : 'No conversations yet'}
           </h3>
-          <p className="text-gray-500 mb-4">
+          <p className="text-orange-600/80 mb-6 font-medium">
             {searchQuery 
               ? 'Try a different search term' 
               : 'Start a new conversation by sending an invitation to another user'
             }
           </p>
           {!searchQuery && (
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-orange-500/70 font-medium bg-orange-50/50 px-4 py-2 rounded-full inline-block">
               Use the + button to send chat invitations
             </div>
           )}

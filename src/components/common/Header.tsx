@@ -10,21 +10,24 @@ const Header = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
-      <div className="max-w-md mx-auto px-4 py-3">
+    <div className="bg-gradient-to-r from-orange-100/95 via-pink-100/95 to-purple-100/95 backdrop-blur-md border-b border-orange-200/50 sticky top-0 z-50 shadow-lg">
+      <div className="max-w-md mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             <Avatar 
-              className="w-10 h-10 cursor-pointer" 
+              className="w-12 h-12 cursor-pointer ring-2 ring-orange-200 hover:ring-pink-300 transition-all duration-300 hover:scale-110 shadow-lg animate-desi-pulse" 
               onClick={() => navigate('/profile')}
             >
               <AvatarImage src={user?.photoURL || user?.avatar} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white text-sm">
+              <AvatarFallback className="bg-gradient-to-br from-orange-400 via-pink-400 to-purple-400 text-white text-lg font-bold shadow-lg">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">Messages</h1>
+              <h1 className="text-2xl font-bold desi-gradient-text">
+                BaatCheet
+              </h1>
+              <p className="text-xs text-orange-600/70 font-medium animate-desi-fade">Connect & Share</p>
             </div>
           </div>
           
@@ -32,14 +35,14 @@ const Header = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-gray-600 hover:bg-gray-100 p-2"
+              className="text-orange-600 hover:bg-orange-200/50 hover:text-orange-700 p-3 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
             >
               <Search className="w-5 h-5" />
             </Button>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-gray-600 hover:bg-gray-100 p-2"
+              className="text-pink-600 hover:bg-pink-200/50 hover:text-pink-700 p-3 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
               onClick={() => navigate('/settings')}
             >
               <Settings className="w-5 h-5" />

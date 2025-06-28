@@ -53,17 +53,17 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
     switch (activeTab) {
       case 'chats':
         return [
-          { icon: <MessageCircle className="w-5 h-5" />, label: 'New Chat', color: 'bg-blue-500' },
-          { icon: <Users className="w-5 h-5" />, label: 'New Group', color: 'bg-green-500' },
+          { icon: <MessageCircle className="w-5 h-5" />, label: 'New Chat', color: 'bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600' },
+          { icon: <Users className="w-5 h-5" />, label: 'New Group', color: 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600' },
         ];
       case 'status':
         return [
-          { icon: <Camera className="w-5 h-5" />, label: 'Camera', color: 'bg-purple-500' },
+          { icon: <Camera className="w-5 h-5" />, label: 'Camera', color: 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600' },
         ];
       case 'calls':
         return [
-          { icon: <Phone className="w-5 h-5" />, label: 'Voice Call', color: 'bg-green-500' },
-          { icon: <Video className="w-5 h-5" />, label: 'Video Call', color: 'bg-blue-500' },
+          { icon: <Phone className="w-5 h-5" />, label: 'Voice Call', color: 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' },
+          { icon: <Video className="w-5 h-5" />, label: 'Video Call', color: 'bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600' },
         ];
       default:
         return [];
@@ -268,12 +268,12 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
                 className="flex items-center space-x-3 animate-scale-in"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <span className="bg-black/80 text-white text-sm px-3 py-1 rounded-full whitespace-nowrap">
+                <span className="bg-gradient-to-r from-orange-800/90 to-pink-800/90 text-white text-sm px-4 py-2 rounded-full whitespace-nowrap font-bold shadow-lg backdrop-blur-sm">
                   {action.label}
                 </span>
                 <Button
                   size="sm"
-                  className={`${action.color} hover:scale-110 transition-transform duration-200 shadow-lg w-12 h-12 rounded-full`}
+                  className={`${action.color} hover:scale-110 transition-all duration-300 shadow-xl w-14 h-14 rounded-full font-bold`}
                   onClick={
                     action.label === 'New Chat'
                       ? handleNewChat
@@ -294,13 +294,13 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
         {/* Main FAB */}
         <Button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
+          className={`w-16 h-16 rounded-full shadow-2xl transition-all duration-300 ${
             isOpen
-              ? 'bg-gray-600 hover:bg-gray-700 rotate-45'
-              : 'bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 hover:scale-110'
+              ? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 rotate-45 hover:scale-110'
+              : 'bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:from-orange-600 hover:via-pink-600 hover:to-purple-600 hover:scale-110'
           }`}
         >
-          {isOpen ? <Plus className="w-6 h-6" /> : getMainIcon()}
+          {isOpen ? <Plus className="w-7 h-7" /> : getMainIcon()}
         </Button>
       </div>
       <StatusUploadDialog 
@@ -310,16 +310,16 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
       />
       {/* Dialog for New Chat */}
       <Dialog open={chatDialogOpen} onOpenChange={setChatDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white/95 backdrop-blur-md border border-orange-200/50">
           <DialogHeader>
-            <DialogTitle>Start New Chat</DialogTitle>
-            <DialogDescription>Search and select a user to send a chat invitation.</DialogDescription>
+            <DialogTitle className="text-orange-800 font-bold">Start New Chat</DialogTitle>
+            <DialogDescription className="text-orange-600">Search and select a user to send a chat invitation.</DialogDescription>
           </DialogHeader>
           <Input
             placeholder="Search users by name or phone"
             value={userSearch}
             onChange={e => setUserSearch(e.target.value)}
-            className="mb-2"
+            className="mb-2 border-2 border-orange-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 rounded-xl"
           />
           <div className="max-h-64 overflow-y-auto space-y-2">
             {(userSearch.trim() === '' ? allUsers : allUsers.filter(u =>
@@ -328,66 +328,77 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
               (u.phone && u.phone.toLowerCase().includes(userSearch.toLowerCase())) ||
               u.id.toLowerCase().includes(userSearch.toLowerCase())
             )).map(userItem => (
-              <div key={userItem.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-100">
-                <img src={userItem.photoURL || userItem.avatar} alt={userItem.name} className="w-8 h-8 rounded-full object-cover" />
+              <div key={userItem.id} className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-pink-50/50 transition-all duration-300">
+                <Avatar className="w-10 h-10 ring-2 ring-orange-200">
+                  <AvatarImage src={userItem.photoURL || userItem.avatar} />
+                  <AvatarFallback className="bg-gradient-to-br from-orange-400 to-pink-400 text-white font-bold">
+                    {userItem.name?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1 min-w-0">
-                  <span className="truncate font-medium">{userItem.name}</span>
-                  <div className="text-xs text-gray-500 truncate">
+                  <span className="truncate font-bold text-orange-800">{userItem.name}</span>
+                  <div className="text-xs text-orange-600/80 truncate font-medium">
                     {userItem.email && <span>{userItem.email}</span>}
                     {userItem.email && userItem.phone && <span> &middot; </span>}
                     {userItem.phone && <span>{userItem.phone}</span>}
                   </div>
                 </div>
-                <Button size="sm" disabled={sendingInvite} onClick={() => sendChatInvitation(userItem.id)}>
+                <Button 
+                  size="sm" 
+                  disabled={sendingInvite} 
+                  onClick={() => sendChatInvitation(userItem.id)}
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold"
+                >
                   {sendingInvite ? 'Sending...' : 'Invite'}
                 </Button>
               </div>
             ))}
-            {allUsers.length === 0 && <div className="text-gray-400 text-center py-4">No users found.</div>}
+            {allUsers.length === 0 && <div className="text-orange-500/70 text-center py-4 font-medium">No users found.</div>}
           </div>
         </DialogContent>
       </Dialog>
       {/* Dialog for New Group */}
       <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-white/95 backdrop-blur-md border border-pink-200/50">
           <DialogHeader>
-            <DialogTitle>Create New Group</DialogTitle>
-            <DialogDescription>Create a group with your accepted contacts. You need at least 2 members to create a group.</DialogDescription>
+            <DialogTitle className="text-pink-800 font-bold">Create New Group</DialogTitle>
+            <DialogDescription className="text-pink-600">Create a group with your accepted contacts. You need at least 2 members to create a group.</DialogDescription>
           </DialogHeader>
           <form onSubmit={submitNewGroup} className="space-y-4">
             {/* Group Name */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Group Name</label>
+              <label className="text-sm font-bold text-pink-700">Group Name</label>
               <Input
                 placeholder="Enter group name"
                 value={groupName}
                 onChange={e => setGroupName(e.target.value)}
                 required
+                className="border-2 border-pink-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 rounded-xl"
               />
             </div>
 
             {/* Group Icon Upload */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Group Icon</label>
+              <label className="text-sm font-bold text-pink-700">Group Icon</label>
               <div className="flex items-center space-x-3">
                 {groupIconPreview ? (
                   <div className="relative">
                     <img 
                       src={groupIconPreview} 
                       alt="Group icon preview" 
-                      className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-pink-200 shadow-lg"
                     />
                     <button
                       type="button"
                       onClick={removeIcon}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full p-1 hover:from-red-600 hover:to-pink-600 shadow-lg"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </div>
                 ) : (
-                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                    <Upload className="w-6 h-6 text-gray-400" />
+                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-pink-300 flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+                    <Upload className="w-6 h-6 text-pink-400" />
                   </div>
                 )}
                 <div className="flex-1">
@@ -399,7 +410,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
                     id="group-icon-upload"
                   />
                   <label htmlFor="group-icon-upload" className="cursor-pointer">
-                    <Button type="button" variant="outline" size="sm" className="w-full">
+                    <Button type="button" variant="outline" size="sm" className="w-full border-2 border-pink-200 text-pink-700 hover:bg-pink-50 font-bold">
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Icon
                     </Button>
@@ -410,44 +421,44 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
 
             {/* Member Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="text-sm font-bold text-pink-700">
                 Select Members ({selectedMembers.length} selected)
               </label>
-              <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-2">
+              <div className="max-h-48 overflow-y-auto border-2 border-pink-200 rounded-xl p-3 space-y-2 bg-gradient-to-br from-pink-50/30 to-purple-50/30">
                 {acceptedContacts.length > 0 ? (
                   acceptedContacts.map(user => (
                     <div
                       key={user.id}
-                      className={`flex items-center space-x-3 p-2 rounded cursor-pointer transition-colors ${
+                      className={`flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-300 ${
                         selectedMembers.includes(user.id) 
-                          ? 'bg-blue-50 border border-blue-200' 
-                          : 'hover:bg-gray-50'
+                          ? 'bg-gradient-to-r from-pink-100 to-purple-100 border-2 border-pink-300 shadow-md' 
+                          : 'hover:bg-gradient-to-r hover:from-pink-50/50 hover:to-purple-50/50'
                       }`}
                       onClick={() => toggleMember(user.id)}
                     >
-                      <Avatar className="w-8 h-8">
+                      <Avatar className="w-8 h-8 ring-2 ring-pink-200">
                         <AvatarImage src={user.photoURL || user.avatar} />
-                        <AvatarFallback className="text-xs">
+                        <AvatarFallback className="bg-gradient-to-br from-pink-400 to-purple-400 text-white text-xs font-bold">
                           {user.name?.charAt(0).toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">{user.name || 'Unknown'}</div>
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="font-bold text-sm truncate text-pink-800">{user.name || 'Unknown'}</div>
+                        <div className="text-xs text-pink-600/80 truncate font-medium">
                           {user.phone || user.email || user.id}
                         </div>
                       </div>
                       {selectedMembers.includes(user.id) && (
-                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
+                        <div className="w-5 h-5 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                          <span className="text-white text-xs font-bold">✓</span>
                         </div>
                       )}
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    <Users className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                    <p className="text-sm">No accepted contacts found</p>
+                  <div className="text-center py-4 text-pink-600/80">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-pink-400" />
+                    <p className="text-sm font-medium">No accepted contacts found</p>
                     <p className="text-xs">You need to have accepted chat invitations to create groups</p>
                   </div>
                 )}
@@ -457,15 +468,15 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
             {/* Selected Members Display */}
             {selectedMembers.length > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">Selected Members:</label>
+                <label className="text-sm font-bold text-pink-700">Selected Members:</label>
                 <div className="flex flex-wrap gap-2">
                   {selectedMembers.map(memberId => {
                     const user = acceptedContacts.find(u => u.id === memberId);
                     return (
-                      <Badge key={memberId} variant="secondary" className="flex items-center space-x-1">
+                      <Badge key={memberId} variant="secondary" className="flex items-center space-x-1 bg-gradient-to-r from-pink-100 to-purple-100 text-pink-800 border border-pink-200 font-bold">
                         <Avatar className="w-4 h-4">
                           <AvatarImage src={user?.photoURL || user?.avatar} />
-                          <AvatarFallback className="text-xs">
+                          <AvatarFallback className="text-xs bg-gradient-to-br from-pink-400 to-purple-400 text-white">
                             {user?.name?.charAt(0).toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
@@ -473,7 +484,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
                         <button
                           type="button"
                           onClick={() => toggleMember(memberId)}
-                          className="ml-1 hover:text-red-500"
+                          className="ml-1 hover:text-red-500 transition-colors duration-200"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -488,7 +499,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
               <Button 
                 type="submit" 
                 disabled={creating || selectedMembers.length < 1 || !groupName.trim()} 
-                className="w-full"
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold shadow-lg"
               >
                 {creating ? 'Creating...' : `Create Group (${selectedMembers.length + 1} members)`}
               </Button>

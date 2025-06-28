@@ -124,8 +124,10 @@ const StatusList = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-        <span className="ml-2 text-gray-600">Loading statuses...</span>
+        <div className="flex items-center space-x-3">
+          <Loader2 className="w-6 h-6 animate-spin text-pink-500" />
+          <span className="text-pink-600 font-medium">Loading statuses...</span>
+        </div>
       </div>
     );
   }
@@ -133,15 +135,16 @@ const StatusList = () => {
   if (error) {
     return (
       <div className="p-8 text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-          <Camera className="w-8 h-8 text-red-500" />
+        <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-pink-100 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
+          <Camera className="w-10 h-10 text-red-500" />
         </div>
-        <h3 className="text-lg font-medium text-gray-600 mb-2">Error loading statuses</h3>
-        <p className="text-gray-500 mb-4">{error}</p>
+        <h3 className="text-xl font-bold text-red-800 mb-3">Error loading statuses</h3>
+        <p className="text-red-600/80 mb-6 font-medium">{error}</p>
         <Button 
           onClick={() => window.location.reload()} 
           variant="outline"
           size="sm"
+          className="bg-gradient-to-r from-red-50 to-pink-50 border-red-200 text-red-700 hover:bg-red-100 font-bold"
         >
           Try Again
         </Button>
@@ -150,41 +153,42 @@ const StatusList = () => {
   }
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-pink-200/30">
       {/* My Status */}
-      <div className="p-4">
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <Avatar className="w-14 h-14">
+      <div className="p-4 bg-gradient-to-r from-pink-50/50 to-purple-50/50">
+        <div className="flex items-center space-x-4">
+          <div className="relative group">
+            <Avatar className="w-16 h-16 ring-2 ring-pink-200 hover:ring-purple-300 transition-all duration-300 group-hover:scale-110 shadow-lg">
               <AvatarImage src={myStatus.avatar} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white text-lg">
+              <AvatarFallback className="bg-gradient-to-br from-pink-400 to-purple-400 text-white text-xl font-bold">
                 You
               </AvatarFallback>
             </Avatar>
-            <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
-              <Plus className="w-3 h-3 text-white" />
+            <div className="absolute bottom-0 right-0 w-7 h-7 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg animate-pulse">
+              <Plus className="w-4 h-4 text-white" />
             </div>
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-gray-900">My Status</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-bold text-pink-800 text-lg">My Status</h3>
+            <p className="text-sm text-pink-600/80 font-medium">
               {myStatus.hasStatus ? 'Tap to view your status' : 'Tap to add status update'}
             </p>
           </div>
           <Button 
             size="sm" 
             variant="ghost" 
-            className="text-green-600 hover:bg-green-50"
+            className="text-pink-600 hover:bg-pink-200/50 hover:text-pink-700 p-3 rounded-xl transition-all duration-300 hover:scale-110"
             onClick={handleMyStatusClick}
           >
-            <Camera className="w-4 h-4" />
+            <Camera className="w-5 h-5" />
           </Button>
         </div>
       </div>
 
       {/* Recent Updates Header */}
-      <div className="px-4 py-2 bg-gray-50">
-        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+      <div className="px-4 py-3 bg-gradient-to-r from-purple-50/80 to-indigo-50/80">
+        <h4 className="text-xs font-bold text-purple-700 uppercase tracking-wider flex items-center">
+          <div className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></div>
           Recent Updates
         </h4>
       </div>
@@ -193,54 +197,65 @@ const StatusList = () => {
       {groupedStatuses.length > 0 ? groupedStatuses.map((group) => (
         <div 
           key={group.userId} 
-          className="p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+          className="p-4 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-indigo-50/50 cursor-pointer transition-all duration-300 border-b border-purple-100/30"
           onClick={() => handleStatusClick(group.statuses)}
         >
-          <div className="flex items-center space-x-3">
-            <div className="relative">
-              <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-purple-500 via-pink-500 to-orange-500">
-                <Avatar className="w-full h-full">
-                  <AvatarImage src={group.userInfo?.avatar || group.statuses[0]?.mediaURL} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white">
-                    {group.userInfo?.name?.charAt(0).toUpperCase() || group.userId.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+          <div className="flex items-center space-x-4">
+            <div className="relative group">
+              <Avatar className="w-14 h-14 ring-2 ring-purple-200 hover:ring-indigo-300 transition-all duration-300 group-hover:scale-110 shadow-lg">
+                <AvatarImage src={group.userInfo?.avatar} />
+                <AvatarFallback className="bg-gradient-to-br from-purple-400 to-indigo-400 text-white font-bold">
+                  {(group.userInfo?.name || 'U').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center border-2 border-white shadow-lg animate-pulse">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="font-medium text-gray-900">
-                {group.userInfo?.name || `User ${group.userId}`}
-              </h3>
-              <p className="text-sm text-gray-500">
-                {new Date(group.statuses[0]?.timestamp).toLocaleString()}
+              <h4 className="font-bold text-purple-800">
+                {group.userInfo?.name || 'Unknown User'}
+              </h4>
+              <p className="text-sm text-purple-600/80 font-medium">
+                {group.statuses.length} status{group.statuses.length !== 1 ? 'es' : ''} • {new Date(group.statuses[0]?.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
-            {group.statuses.length > 1 && (
-              <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                {group.statuses.length}
-              </div>
-            )}
+            <div className="flex space-x-1">
+              {group.statuses.slice(0, 3).map((status, index) => (
+                <div 
+                  key={status.id}
+                  className="w-8 h-8 rounded-lg overflow-hidden border-2 border-white shadow-md"
+                  style={{
+                    backgroundImage: `url(${status.mediaURL})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    transform: `translateX(${index * -4}px)`,
+                    zIndex: 3 - index
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       )) : (
         <div className="p-8 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <Camera className="w-8 h-8 text-gray-400" />
+          <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
+            <Camera className="w-10 h-10 text-purple-500" />
           </div>
-          <h3 className="text-lg font-medium text-gray-600 mb-2">No status updates</h3>
-          <p className="text-gray-500">Share photos and videos with your accepted contacts</p>
+          <h3 className="text-xl font-bold text-purple-800 mb-3">No status updates</h3>
+          <p className="text-purple-600/80 font-medium">
+            Your friends haven't shared any status updates yet
+          </p>
         </div>
       )}
 
-      {/* Status Viewer */}
       <StatusViewer
-        open={viewerOpen}
-        onOpenChange={setViewerOpen}
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
         statuses={currentStatuses}
         currentIndex={currentIndex}
-        onStatusChange={setCurrentIndex}
+        onIndexChange={setCurrentIndex}
         onStatusDelete={handleStatusDelete}
-        currentUserId={user?.id || ''}
       />
     </div>
   );

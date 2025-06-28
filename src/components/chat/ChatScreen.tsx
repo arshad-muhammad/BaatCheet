@@ -700,35 +700,44 @@ const ChatScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <div className="max-w-md mx-auto bg-white/80 backdrop-blur-sm shadow-xl min-h-screen flex flex-col">
-        <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-100 via-pink-50 to-purple-100 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full opacity-15 animate-desi-float"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-pink-400 to-red-400 rounded-full opacity-10 animate-desi-bounce"></div>
+        <div className="absolute bottom-32 left-20 w-20 h-20 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full opacity-20 animate-desi-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-28 h-28 bg-gradient-to-r from-green-400 to-teal-400 rounded-full opacity-15 animate-desi-float-delayed"></div>
+      </div>
+      
+      <div className="max-w-md mx-auto bg-white/90 backdrop-blur-md shadow-2xl min-h-screen flex flex-col relative z-10 border-l border-r border-white/20">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-orange-100/95 via-pink-100/95 to-purple-100/95 backdrop-blur-md border-b border-orange-200/50 p-4 shadow-lg">
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="p-2 hover:bg-gray-100"
+              className="p-2 hover:bg-orange-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 text-orange-600" />
             </Button>
 
             <div className="flex items-center space-x-3 flex-1">
-              <div className="relative">
-                <Avatar className="w-10 h-10">
+              <div className="relative group">
+                <Avatar className="w-12 h-12 ring-2 ring-orange-200 hover:ring-pink-300 transition-all duration-300 group-hover:scale-110 shadow-lg">
                   <AvatarImage src={displayAvatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-green-400 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-orange-400 via-pink-400 to-purple-400 text-white font-bold">
                     {(displayName || '').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {!chat.isGroup && chat.isOnline && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-400 border-2 border-white rounded-full animate-desi-pulse"></div>
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <h2 className="font-medium text-gray-900 truncate">{displayName || 'Unknown'}</h2>
-                <p className="text-sm text-gray-500">
+                <h2 className="font-bold text-orange-800 truncate text-lg">{displayName || 'Unknown'}</h2>
+                <p className="text-sm text-orange-600/80 font-medium">
                   {chat.isGroup 
                     ? `${chat.members?.length || 0} members`
                     : chat.isOnline 
@@ -740,20 +749,39 @@ const ChatScreen = () => {
             </div>
 
             <div className="flex space-x-2">
-              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100" onClick={() => handleStartCall('audio')} disabled={chat.isGroup} title={chat.isGroup ? 'Calls only available in 1:1 chats' : 'Start voice call'}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-3 hover:bg-green-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
+                onClick={() => handleStartCall('audio')} 
+                disabled={chat.isGroup} 
+                title={chat.isGroup ? 'Calls only available in 1:1 chats' : 'Start voice call'}
+              >
                 <Phone className="w-5 h-5 text-green-600" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100" onClick={() => handleStartCall('video')} disabled={chat.isGroup} title={chat.isGroup ? 'Calls only available in 1:1 chats' : 'Start video call'}>
-                <Video className="w-5 h-5 text-blue-600" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-3 hover:bg-indigo-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
+                onClick={() => handleStartCall('video')} 
+                disabled={chat.isGroup} 
+                title={chat.isGroup ? 'Calls only available in 1:1 chats' : 'Start video call'}
+              >
+                <Video className="w-5 h-5 text-indigo-600" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100">
-                <Settings className="w-5 h-5 text-gray-600" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-3 hover:bg-pink-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover"
+              >
+                <Settings className="w-5 h-5 text-pink-600" />
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-orange-50/30 via-pink-50/30 to-purple-50/30">
           {firebaseMessages.map((message) => (
             <MessageBubble
               key={message.id}
@@ -766,20 +794,31 @@ const ChatScreen = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="bg-white/90 backdrop-blur-sm border-t border-gray-100 p-4">
+        {/* Input Area */}
+        <div className="bg-gradient-to-r from-orange-100/95 via-pink-100/95 to-purple-100/95 backdrop-blur-md border-t border-orange-200/50 p-4 shadow-lg">
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100" onClick={() => setShowEmojiPicker(v => !v)}>
-              <Smile className="w-5 h-5 text-yellow-500" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-3 hover:bg-yellow-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
+              onClick={() => setShowEmojiPicker(v => !v)}
+            >
+              <Smile className="w-5 h-5 text-yellow-600" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100" onClick={() => setShowGifPicker(v => !v)}>
-              <ImageIcon className="w-5 h-5 text-pink-500" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-3 hover:bg-pink-200/50 rounded-xl transition-all duration-300 hover:scale-110 desi-button-hover" 
+              onClick={() => setShowGifPicker(v => !v)}
+            >
+              <ImageIcon className="w-5 h-5 text-pink-600" />
             </Button>
-            <label className="p-2 hover:bg-gray-100 rounded cursor-pointer">
-              <Paperclip className="w-5 h-5 text-gray-500" />
+            <label className="p-3 hover:bg-purple-200/50 rounded-xl cursor-pointer transition-all duration-300 hover:scale-110 desi-button-hover">
+              <Paperclip className="w-5 h-5 text-purple-600" />
               <input type="file" className="hidden" onChange={handleFileChange} disabled={isUploadingFile} />
             </label>
             {isUploadingFile && (
-              <span className="ml-2 text-xs text-blue-500 animate-pulse">Uploading...</span>
+              <span className="ml-2 text-xs text-orange-600 font-medium animate-desi-pulse">Uploading...</span>
             )}
             <div className="flex-1 relative">
               <Input
@@ -788,13 +827,13 @@ const ChatScreen = () => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
-                className="pr-12 border-gray-200 focus:border-blue-400 focus:ring-blue-400 rounded-full"
+                className="pr-12 border-2 border-orange-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 rounded-2xl bg-white/80 backdrop-blur-sm transition-all duration-300 hover:border-orange-300 focus:bg-white shadow-lg desi-button-hover"
               />
             </div>
             {newMessage.trim() ? (
               <Button
                 onClick={handleSendMessage}
-                className="bg-green-500 hover:bg-green-600 rounded-full p-3"
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-full p-3 transition-all duration-300 hover:scale-110 shadow-lg desi-button-hover"
               >
                 <Send className="w-5 h-5" />
               </Button>
@@ -802,14 +841,14 @@ const ChatScreen = () => {
               <Button
                 onClick={handleOpenRecorder}
                 disabled={isUploadingAudio}
-                className="rounded-full p-3 transition-colors bg-blue-500 hover:bg-blue-600"
+                className="rounded-full p-3 transition-all duration-300 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 hover:scale-110 shadow-lg desi-button-hover"
               >
                 <Mic className="w-5 h-5" />
               </Button>
             )}
           </div>
           {showEmojiPicker && (
-            <div className="absolute bottom-20 left-4 z-50 bg-white shadow-lg rounded-lg p-2">
+            <div className="absolute bottom-20 left-4 z-50 bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl p-3 border border-orange-200/50">
               {isMounted && (
                 <EmojiPicker
                   onEmojiClick={handleEmojiClick}
@@ -823,57 +862,63 @@ const ChatScreen = () => {
             </div>
           )}
           {showGifPicker && (
-            <div className="absolute bottom-20 left-20 z-50 bg-white shadow-lg rounded-lg p-2 w-[350px] h-[400px]">
+            <div className="absolute bottom-20 left-20 z-50 bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl p-3 w-[350px] h-[400px] border border-pink-200/50">
               <input
                 type="text"
                 value={gifSearch}
                 onChange={e => setGifSearch(e.target.value)}
                 placeholder="Search GIFs..."
-                className="w-full mb-2 px-2 py-1 border rounded"
+                className="w-full mb-2 px-3 py-2 border-2 border-pink-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 rounded-xl bg-white/80 backdrop-blur-sm transition-all duration-300"
               />
               <Grid
                 fetchGifs={offset => gf.search(gifSearch || 'trending', { offset, limit: 10 })}
                 width={320}
                 columns={2}
                 gutter={6}
-                onGifClick={gif => handleGifSelect(gif)}
+                onGifClick={(gif, e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleGifSelect(gif);
+                }}
                 hideAttribution
               />
             </div>
           )}
         </div>
       </div>
+      
+      {/* Voice Recorder Dialog */}
       <Dialog open={showRecorder} onOpenChange={setShowRecorder}>
-        <DialogContent className="max-w-xs w-full flex flex-col items-center space-y-4">
-          <DialogTitle>Voice Message</DialogTitle>
-          <DialogDescription>Record and send a voice message.</DialogDescription>
+        <DialogContent className="max-w-xs w-full flex flex-col items-center space-y-4 bg-white/95 backdrop-blur-md border border-orange-200/50">
+          <DialogTitle className="text-orange-800 font-bold">Voice Message</DialogTitle>
+          <DialogDescription className="text-orange-600">Record and send a voice message.</DialogDescription>
           <div className="text-center">
-            <div className="text-2xl font-mono mb-4">{`${Math.floor(recordingTime/60).toString().padStart(2,'0')}:${(recordingTime%60).toString().padStart(2,'0')}`}</div>
+            <div className="text-2xl font-mono mb-4 text-orange-700 font-bold">{`${Math.floor(recordingTime/60).toString().padStart(2,'0')}:${(recordingTime%60).toString().padStart(2,'0')}`}</div>
             {recorderState === 'idle' && (
-              <Button onClick={handleStartRecording} className="bg-red-500 hover:bg-red-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+              <Button onClick={handleStartRecording} className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto shadow-lg desi-button-hover">
                 <Mic className="w-8 h-8 text-white" />
               </Button>
             )}
             {recorderState === 'recording' && (
               <div className="flex flex-col items-center space-y-2">
-                <Button onClick={handlePauseRecording} className="bg-yellow-500 hover:bg-yellow-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto animate-pulse">
+                <Button onClick={handlePauseRecording} className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto animate-desi-pulse shadow-lg desi-button-hover">
                   <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" /></svg>
                 </Button>
-                <Button onClick={handleStopRecording} variant="outline" className="mt-2">Stop</Button>
+                <Button onClick={handleStopRecording} variant="outline" className="mt-2 border-2 border-orange-200 text-orange-700 hover:bg-orange-50 font-bold">Stop</Button>
               </div>
             )}
             {recorderState === 'paused' && (
               <div className="flex flex-col items-center space-y-2">
-                <Button onClick={handleResumeRecording} className="bg-green-500 hover:bg-green-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+                <Button onClick={handleResumeRecording} className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto shadow-lg desi-button-hover">
                   <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor" /></svg>
                 </Button>
-                <Button onClick={handleStopRecording} variant="outline" className="mt-2">Stop</Button>
+                <Button onClick={handleStopRecording} variant="outline" className="mt-2 border-2 border-orange-200 text-orange-700 hover:bg-orange-50 font-bold">Stop</Button>
               </div>
             )}
           </div>
           <div className="flex w-full justify-between space-x-2">
-            <Button variant="outline" onClick={handleDiscardRecording} className="flex-1">Discard</Button>
-            <Button onClick={handleSendRecording} className="flex-1 bg-green-500 hover:bg-green-600 text-white" disabled={isUploadingAudio || !audioBlob}>
+            <Button variant="outline" onClick={handleDiscardRecording} className="flex-1 border-2 border-red-200 text-red-700 hover:bg-red-50 font-bold">Discard</Button>
+            <Button onClick={handleSendRecording} className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold shadow-lg desi-button-hover" disabled={isUploadingAudio || !audioBlob}>
               {isUploadingAudio ? (
                 <svg className="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
               ) : 'Send'}
@@ -881,10 +926,12 @@ const ChatScreen = () => {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Call Dialog */}
       <CallDialog open={callDialogOpen} onOpenChange={setCallDialogOpen}>
-        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full">
-          <CallDialogTitle>{callType === 'video' ? 'Video Call' : 'Voice Call'}</CallDialogTitle>
-          <CallDialogDescription>
+        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full bg-white/95 backdrop-blur-md border border-orange-200/50">
+          <CallDialogTitle className="text-orange-800 font-bold">{callType === 'video' ? 'Video Call' : 'Voice Call'}</CallDialogTitle>
+          <CallDialogDescription className="text-orange-600">
             {callStatus === 'connecting' && 'Connecting...'}
             {callStatus === 'connected' && (callType === 'video' ? 'Video call in progress' : 'Voice call in progress')}
             {callStatus === 'failed' && 'Call failed'}
@@ -896,18 +943,18 @@ const ChatScreen = () => {
             <div className="flex flex-col items-center space-y-2 w-full">
               {callType === 'video' ? (
                 <>
-                  <video ref={localVideoRef} autoPlay muted playsInline className="w-32 h-32 bg-black rounded-lg border" />
-                  <video ref={remoteVideoRef} autoPlay playsInline className="w-48 h-48 bg-black rounded-lg border" />
+                  <video ref={localVideoRef} autoPlay muted playsInline className="w-32 h-32 bg-black rounded-2xl border-2 border-orange-200 shadow-lg" />
+                  <video ref={remoteVideoRef} autoPlay playsInline className="w-48 h-48 bg-black rounded-2xl border-2 border-pink-200 shadow-lg" />
                 </>
               ) : (
                 <>
-                  <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-100 to-pink-100 flex items-center justify-center mb-2 shadow-lg border-2 border-orange-200">
                     <Phone className="w-10 h-10 text-green-600" />
                   </div>
-                  <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                    <Avatar className="w-16 h-16">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center mb-2 shadow-lg border-2 border-pink-200">
+                    <Avatar className="w-16 h-16 ring-2 ring-white">
                       <AvatarImage src={displayAvatar} />
-                      <AvatarFallback>{(displayName || '').charAt(0).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-pink-400 to-purple-400 text-white font-bold">{(displayName || '').charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </div>
                 </>
@@ -915,32 +962,34 @@ const ChatScreen = () => {
             </div>
             {callStatus === 'connecting' && (
               <div className="mt-4 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                <p className="text-sm text-gray-600 mt-2">Connecting to {displayName}...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+                <p className="text-sm text-orange-600 mt-2 font-medium">Connecting to {displayName}...</p>
               </div>
             )}
-            <Button onClick={handleEndCall} className="mt-4 bg-red-500 hover:bg-red-600 text-white">End Call</Button>
+            <Button onClick={handleEndCall} className="mt-4 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold shadow-lg desi-button-hover">End Call</Button>
           </div>
         </CallDialogContent>
       </CallDialog>
+      
+      {/* Incoming Call Dialog */}
       <CallDialog open={incomingCallDialogOpen} onOpenChange={setIncomingCallDialogOpen}>
-        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full">
-          <CallDialogTitle>Incoming {callType === 'video' ? 'Video' : 'Voice'} Call</CallDialogTitle>
-          <CallDialogDescription>
+        <CallDialogContent className="flex flex-col items-center space-y-4 max-w-md w-full bg-white/95 backdrop-blur-md border border-orange-200/50">
+          <CallDialogTitle className="text-orange-800 font-bold">Incoming {callType === 'video' ? 'Video' : 'Voice'} Call</CallDialogTitle>
+          <CallDialogDescription className="text-orange-600">
             {displayName} is calling you...
           </CallDialogDescription>
           <div className="w-full flex flex-col items-center space-y-4">
-            <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center">
-              <Avatar className="w-16 h-16">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center shadow-lg border-2 border-pink-200 animate-desi-pulse">
+              <Avatar className="w-16 h-16 ring-2 ring-white">
                 <AvatarImage src={displayAvatar} />
-                <AvatarFallback>{(displayName || '').charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="bg-gradient-to-br from-pink-400 to-purple-400 text-white font-bold">{(displayName || '').charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
             </div>
             <div className="flex space-x-4">
-              <Button onClick={handleAcceptCall} className="bg-green-500 hover:bg-green-600 text-white px-6">
+              <Button onClick={handleAcceptCall} className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 font-bold shadow-lg desi-button-hover">
                 Accept
               </Button>
-              <Button onClick={handleRejectCall} className="bg-red-500 hover:bg-red-600 text-white px-6">
+              <Button onClick={handleRejectCall} className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-6 font-bold shadow-lg desi-button-hover">
                 Reject
               </Button>
             </div>

@@ -35,11 +35,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
   const getStatusIcon = () => {
     switch (message.status) {
       case 'sent':
-        return <Check className="w-3 h-3 text-gray-400" />;
+        return <Check className="w-3 h-3 text-orange-400" />;
       case 'delivered':
-        return <CheckCheck className="w-3 h-3 text-gray-400" />;
+        return <CheckCheck className="w-3 h-3 text-pink-400" />;
       case 'read':
-        return <CheckCheck className="w-3 h-3 text-blue-500" />;
+        return <CheckCheck className="w-3 h-3 text-green-500" />;
       default:
         return null;
     }
@@ -78,18 +78,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
     <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group py-1`}>
       <div className={`max-w-xs lg:max-w-md relative ${isOwnMessage ? 'ml-8' : 'mr-8'}`}>
         {isGroup && !isOwnMessage && (
-          <div className="font-bold text-blue-600 mb-1 text-xs">{senderName}</div>
+          <div className="font-bold text-pink-600 mb-1 text-xs animate-desi-fade">{senderName}</div>
         )}
         <div
-          className={`rounded-2xl px-4 py-2 shadow-sm break-words ${
+          className={`rounded-2xl px-4 py-3 shadow-lg break-words transition-all duration-300 hover:shadow-xl ${
             isOwnMessage
-              ? 'bg-blue-100 text-blue-900 rounded-br-md'
-              : 'bg-gray-50 text-gray-800 rounded-bl-md border border-gray-200'
+              ? 'bg-gradient-to-br from-orange-100 to-pink-100 text-orange-900 rounded-br-md border border-orange-200'
+              : 'bg-gradient-to-br from-purple-50 to-indigo-50 text-purple-900 rounded-bl-md border border-purple-200'
           }`}
         >
           {message.replyTo && (
             <div className={`text-xs mb-2 pb-2 border-l-2 pl-2 ${
-              isOwnMessage ? 'border-blue-200 text-blue-700' : 'border-gray-300 text-gray-600'
+              isOwnMessage ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-600'
             }`}>
               Replying to message...
             </div>
@@ -100,7 +100,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
               <img
                 src={message.fileUrl}
                 alt={message.fileName || 'Image'}
-                className="max-h-60 max-w-full rounded-lg border border-gray-200 shadow-sm"
+                className="max-h-60 max-w-full rounded-xl border-2 border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300"
                 loading="lazy"
               />
             </div>
@@ -110,20 +110,20 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
               <video
                 src={message.fileUrl}
                 controls
-                className="max-h-60 max-w-full rounded-lg border border-gray-200 shadow-sm"
+                className="max-h-60 max-w-full rounded-xl border-2 border-pink-200 shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Your browser does not support the video tag.
               </video>
             </div>
           )}
           {message.fileUrl && message.fileType === 'file' && (
-            <div className="my-2 flex items-center space-x-2 bg-gray-100 border border-gray-200 rounded-lg px-3 py-2">
-              <File className="w-5 h-5 text-blue-500" />
+            <div className="my-2 flex items-center space-x-2 bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 rounded-xl px-3 py-2 shadow-md">
+              <File className="w-5 h-5 text-orange-600" />
               <a
                 href={message.fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-700 underline break-all"
+                className="text-orange-700 underline break-all font-medium hover:text-pink-700 transition-colors duration-300"
                 download={message.fileName}
               >
                 {message.fileName || 'Download file'}
@@ -132,16 +132,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
           )}
           {('audioUrl' in message && message.audioUrl) ? (
             <div className="flex flex-col items-center w-full my-2">
-              <div className="flex items-center w-full space-x-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+              <div className="flex items-center w-full space-x-2 bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-200 rounded-xl px-3 py-2 shadow-md">
                 <button
                   onClick={handlePlayPause}
-                  className="focus:outline-none"
+                  className="focus:outline-none hover:scale-110 transition-transform duration-300"
                   aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
                   {isPlaying ? (
-                    <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" /><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" /></svg>
+                    <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" /><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" /></svg>
                   ) : (
-                    <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor" /></svg>
+                    <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor" /></svg>
                   )}
                 </button>
                 <input
@@ -155,11 +155,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
                       setProgress(Number(e.target.value));
                     }
                   }}
-                  className="flex-1 accent-blue-500 h-1"
+                  className="flex-1 accent-orange-500 h-2 rounded-full"
                   step="0.01"
                   aria-label="Seek"
                 />
-                <span className="text-xs text-blue-700 min-w-[40px] text-right">
+                <span className="text-xs text-orange-700 min-w-[40px] text-right font-medium">
                   {duration
                     ? `${Math.floor(progress/60).toString().padStart(2,'0')}:${Math.floor(progress%60).toString().padStart(2,'0')}`
                     : '00:00'}
@@ -179,17 +179,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
               <span className="sr-only">Voice message</span>
             </div>
           ) : (
-            <p className="text-sm leading-relaxed whitespace-pre-line">{message.text}</p>
+            <p className="text-sm leading-relaxed whitespace-pre-line font-medium">{message.text}</p>
           )}
-          <div className={`flex items-center justify-end space-x-1 mt-1 ${
-            isOwnMessage ? 'text-blue-600' : 'text-gray-500'
+          <div className={`flex items-center justify-end space-x-1 mt-2 ${
+            isOwnMessage ? 'text-orange-600' : 'text-purple-600'
           }`}>
-            <span className="text-xs">
+            <span className="text-xs font-medium">
               {formatDistanceToNow(message.timestamp, { addSuffix: false })}
             </span>
             {isOwnMessage && getStatusIcon()}
             {message.isStarred && (
-              <Star className="w-3 h-3 text-yellow-400 fill-current" />
+              <Star className="w-3 h-3 text-yellow-500 fill-current animate-desi-pulse" />
             )}
           </div>
         </div>
@@ -199,10 +199,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
             {Object.entries(message.reactions).map(([emoji, users]) => (
               <div
                 key={emoji}
-                className="bg-white border border-gray-200 rounded-full px-2 py-1 text-xs flex items-center space-x-1 shadow-sm"
+                className="bg-white/90 backdrop-blur-sm border-2 border-orange-200 rounded-full px-2 py-1 text-xs flex items-center space-x-1 shadow-lg"
               >
                 <span>{emoji}</span>
-                <span className="text-gray-600">{users.length}</span>
+                <span className="text-orange-600 font-medium">{users.length}</span>
               </div>
             ))}
           </div>
@@ -210,18 +210,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
 
         <div className={`absolute top-0 ${
           isOwnMessage ? 'left-0 -translate-x-full' : 'right-0 translate-x-full'
-        } opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg shadow-lg border border-gray-200 p-1 flex space-x-1`}>
-          <button className="p-1 hover:bg-gray-100 rounded text-gray-600">
-            <Reply className="w-3 h-3" />
+        } opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-orange-200 p-2 flex space-x-1`}>
+          <button className="p-2 hover:bg-orange-100 rounded-lg text-orange-600 transition-all duration-300 hover:scale-110">
+            <Reply className="w-4 h-4" />
           </button>
-          <button className="p-1 hover:bg-gray-100 rounded text-gray-600">
-            <Forward className="w-3 h-3" />
+          <button className="p-2 hover:bg-pink-100 rounded-lg text-pink-600 transition-all duration-300 hover:scale-110">
+            <Forward className="w-4 h-4" />
           </button>
-          <button className="p-1 hover:bg-gray-100 rounded text-yellow-600">
-            <Star className="w-3 h-3" />
+          <button className="p-2 hover:bg-yellow-100 rounded-lg text-yellow-600 transition-all duration-300 hover:scale-110">
+            <Star className="w-4 h-4" />
           </button>
-          <button className="p-1 hover:bg-gray-100 rounded text-red-600">
-            <Trash2 className="w-3 h-3" />
+          <button className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-all duration-300 hover:scale-110">
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
