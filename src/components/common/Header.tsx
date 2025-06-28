@@ -14,6 +14,7 @@ const Header = () => {
       <div className="max-w-md mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+            <img src="/logo.jpg" alt="App Logo" className="w-10 h-10 rounded-full shadow-md logo" />
             <Avatar 
               className="w-12 h-12 cursor-pointer ring-2 ring-orange-200 hover:ring-pink-300 transition-all duration-300 hover:scale-110 shadow-lg animate-desi-pulse" 
               onClick={() => navigate('/profile')}

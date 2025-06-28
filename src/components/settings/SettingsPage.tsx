@@ -33,22 +33,20 @@ const SettingsPage = () => {
       title: 'Account',
       items: [
         { icon: User, label: 'Profile', description: 'Name, status, photo', onClick: () => navigate('/profile') },
-        { icon: Shield, label: 'Privacy', description: 'Block contacts, disappearing messages' },
-        { icon: Lock, label: 'Security', description: 'Change number, delete account' },
+        { icon: Shield, label: 'Privacy', description: 'Block contacts, disappearing messages', onClick: () => navigate('/settings/privacy') },
       ],
     },
     {
       title: 'Preferences',
       items: [
-        { icon: Bell, label: 'Notifications', description: 'Message, call notifications' },
-        { icon: MessageSquare, label: 'Chats', description: 'Theme, wallpapers, chat history' },
-        { icon: Palette, label: 'Appearance', description: 'Dark mode, themes' },
+        { icon: Bell, label: 'Notifications', description: 'Message, call notifications', onClick: () => navigate('/settings/notifications') },
+        { icon: MessageSquare, label: 'Chats', description: 'Theme, wallpapers, chat history', onClick: () => navigate('/settings/chats') },
       ],
     },
     {
       title: 'Other',
       items: [
-        { icon: Star, label: 'Starred Messages', description: 'View all starred messages' },
+        { icon: Star, label: 'Starred Messages', description: 'View all starred messages', onClick: () => navigate('/settings/starred') },
       ],
     },
   ];

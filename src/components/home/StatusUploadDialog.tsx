@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Camera, Type } from 'lucide-react';
 import { storage, db } from '../../lib/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ref as dbRef, push, set } from 'firebase/database';
 import { useAuthStore } from '../../store/authStore';
+import StatusCreator from './StatusCreator';
 
 interface StatusUploadDialogProps {
   open: boolean;
@@ -18,6 +21,7 @@ const StatusUploadDialog: React.FC<StatusUploadDialogProps> = ({ open, onOpenCha
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('media');
   const { user } = useAuthStore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,43 +81,72 @@ const StatusUploadDialog: React.FC<StatusUploadDialogProps> = ({ open, onOpenCha
     setFile(null);
     setPreview(null);
     setError(null);
+    setActiveTab('media');
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Upload Status</DialogTitle>
+          <DialogTitle>Create Status</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <Input 
-            type="file" 
-            accept="image/*,video/*" 
-            onChange={handleFileChange} 
-            disabled={uploading} 
-          />
-          {preview && (
-            <div className="w-full flex justify-center">
-              {file?.type.startsWith('video') ? (
-                <video src={preview} controls className="max-h-60 rounded-lg" />
-              ) : (
-                <img src={preview} alt="Preview" className="max-h-60 rounded-lg" />
-              )}
-            </div>
-          )}
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-        </div>
-        <DialogFooter>
-          <Button onClick={handleUpload} disabled={!file || uploading}>
-            {uploading ? 'Uploading...' : 'Upload'}
-          </Button>
-          <DialogClose asChild>
-            <Button variant="ghost" disabled={uploading} onClick={handleClose}>
-              Cancel
-            </Button>
-          </DialogClose>
-        </DialogFooter>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="media" className="flex items-center space-x-2">
+              <Camera className="w-4 h-4" />
+              <span>Media</span>
+            </TabsTrigger>
+            <TabsTrigger value="text" className="flex items-center space-x-2">
+              <Type className="w-4 h-4" />
+              <span>Text</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="media" className="space-y-4">
+            <Input 
+              type="file" 
+              accept="image/*,video/*" 
+              onChange={handleFileChange} 
+              disabled={uploading} 
+            />
+            {preview && (
+              <div className="w-full flex justify-center">
+                {file?.type.startsWith('video') ? (
+                  <video src={preview} controls className="max-h-60 rounded-lg" />
+                ) : (
+                  <img src={preview} alt="Preview" className="max-h-60 rounded-lg" />
+                )}
+              </div>
+            )}
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+            
+            <DialogFooter>
+              <Button onClick={handleUpload} disabled={!file || uploading}>
+                {uploading ? 'Uploading...' : 'Upload'}
+              </Button>
+              <DialogClose asChild>
+                <Button variant="ghost" disabled={uploading} onClick={handleClose}>
+                  Cancel
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </TabsContent>
+          
+          <TabsContent value="text">
+            <StatusCreator 
+              open={activeTab === 'text'} 
+              onOpenChange={(open) => {
+                if (!open) {
+                  setActiveTab('media');
+                  onOpenChange(false);
+                }
+              }}
+              onUploadSuccess={onUploadSuccess}
+            />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

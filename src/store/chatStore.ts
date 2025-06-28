@@ -1,14 +1,22 @@
 import { create } from 'zustand';
+import { db } from '../lib/firebase';
+import { ref as dbRef, update } from 'firebase/database';
 
 interface Message {
   id: string;
   senderId: string;
   text: string;
-  timestamp: Date;
+  timestamp: Date | number;
   status: 'sent' | 'delivered' | 'read';
   replyTo?: string;
   reactions?: { [emoji: string]: string[] };
   isStarred?: boolean;
+  audioUrl?: string;
+  fileUrl?: string;
+  fileType?: string;
+  fileName?: string;
+  type?: 'text' | 'gif' | 'audio' | 'file';
+  gifUrl?: string;
 }
 
 interface Chat {
@@ -37,6 +45,7 @@ interface ChatState {
   toggleStar: (chatId: string, messageId: string) => void;
   togglePin: (chatId: string) => void;
   setChats: (chats: Chat[]) => void;
+  syncFirebaseMessages: (chatId: string, firebaseMessages: Message[]) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -126,18 +135,47 @@ export const useChatStore = create<ChatState>((set, get) => ({
       ],
     },
   })),
-  toggleStar: (chatId, messageId) => set((state) => ({
-    messages: {
-      ...state.messages,
-      [chatId]: state.messages[chatId]?.map(msg =>
-        msg.id === messageId ? { ...msg, isStarred: !msg.isStarred } : msg
-      ) || [],
-    },
-  })),
+  toggleStar: async (chatId, messageId) => {
+    const state = get();
+    const chatMessages = state.messages[chatId] || [];
+    const messageIndex = chatMessages.findIndex(msg => msg.id === messageId);
+    
+    if (messageIndex === -1) return;
+    
+    const message = chatMessages[messageIndex];
+    const newIsStarred = !message.isStarred;
+    
+    // Update local state
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [chatId]: state.messages[chatId]?.map(msg =>
+          msg.id === messageId ? { ...msg, isStarred: newIsStarred } : msg
+        ) || [],
+      },
+    }));
+    
+    // Update Firebase
+    try {
+      const messageRef = dbRef(db, `chats/${chatId}/messages/${messageId}`);
+      await update(messageRef, { isStarred: newIsStarred });
+    } catch (error) {
+      console.error('Error updating star status in Firebase:', error);
+    }
+  },
   togglePin: (chatId) => set((state) => ({
     chats: state.chats.map(chat =>
       chat.id === chatId ? { ...chat, isPinned: !chat.isPinned } : chat
     ),
   })),
   setChats: (chats) => set({ chats }),
+  syncFirebaseMessages: (chatId, firebaseMessages) => set((state) => ({
+    messages: {
+      ...state.messages,
+      [chatId]: firebaseMessages.map(msg => ({
+        ...msg,
+        timestamp: typeof msg.timestamp === 'number' ? new Date(msg.timestamp) : msg.timestamp
+      })),
+    },
+  })),
 }));

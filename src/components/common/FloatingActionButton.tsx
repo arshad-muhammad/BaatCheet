@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, MessageCircle, Users, Phone, Video, Camera, Upload, X } from 'lucide-react';
+import { Plus, MessageCircle, Users, Phone, Video, Camera, Upload, X, Type } from 'lucide-react';
 import { db, storage } from '../../lib/firebase';
 import { ref as dbRef, get, set, push, serverTimestamp, update, remove } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import StatusUploadDialog from '../home/StatusUploadDialog';
+import StatusCreator from '../home/StatusCreator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useChatStore } from '../../store/chatStore';
@@ -21,6 +22,7 @@ interface FloatingActionButtonProps {
 const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [textStoryDialogOpen, setTextStoryDialogOpen] = useState(false);
   const [chatDialogOpen, setChatDialogOpen] = useState(false);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [chatUserId, setChatUserId] = useState('');
@@ -41,7 +43,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
   const getMainIcon = () => {
     switch (activeTab) {
       case 'status':
-        return <Camera className="w-6 h-6" />;
+        return <Plus className="w-6 h-6" />;
       case 'calls':
         return <Phone className="w-6 h-6" />;
       default:
@@ -58,7 +60,8 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
         ];
       case 'status':
         return [
-          { icon: <Camera className="w-5 h-5" />, label: 'Camera', color: 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600' },
+          { icon: <Type className="w-5 h-5" />, label: 'Text Story', color: 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600' },
+          { icon: <Camera className="w-5 h-5" />, label: 'Media Upload', color: 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600' },
         ];
       case 'calls':
         return [
@@ -217,10 +220,20 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
     setIsOpen(false);
   };
 
+  const handleTextStory = () => {
+    setTextStoryDialogOpen(true);
+    setIsOpen(false);
+  };
+
   const handleStatusUploadSuccess = () => {
     // This will trigger a refresh of the status list
     // The StatusList component will automatically refresh due to its useEffect
     toast({ title: 'Status uploaded', description: 'Your status has been uploaded successfully!' });
+  };
+
+  const handleTextStorySuccess = () => {
+    // This will trigger a refresh of the status list
+    toast({ title: 'Text story created', description: 'Your text story has been created successfully!' });
   };
 
   const sendChatInvitation = async (recipientId) => {
@@ -279,7 +292,9 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
                       ? handleNewChat
                       : action.label === 'New Group'
                       ? handleNewGroup
-                      : action.label === 'Camera' && activeTab === 'status'
+                      : action.label === 'Text Story' && activeTab === 'status'
+                      ? handleTextStory
+                      : action.label === 'Media Upload' && activeTab === 'status'
                       ? handleStatusUpload
                       : undefined
                   }
@@ -307,6 +322,11 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ activeTab }
         open={statusDialogOpen} 
         onOpenChange={setStatusDialogOpen} 
         onUploadSuccess={handleStatusUploadSuccess}
+      />
+      <StatusCreator 
+        open={textStoryDialogOpen} 
+        onOpenChange={setTextStoryDialogOpen} 
+        onUploadSuccess={handleTextStorySuccess}
       />
       {/* Dialog for New Chat */}
       <Dialog open={chatDialogOpen} onOpenChange={setChatDialogOpen}>

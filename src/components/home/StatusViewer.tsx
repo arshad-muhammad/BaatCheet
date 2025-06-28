@@ -14,7 +14,15 @@ interface StatusItem {
   mediaURL: string;
   userId: string;
   timestamp: number;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'text';
+  textContent?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  textSize?: number;
+  textPosition?: {
+    x: number;
+    y: number;
+  };
 }
 
 interface StatusViewerProps {
@@ -171,6 +179,30 @@ const StatusViewer: React.FC<StatusViewerProps> = ({
                     className="max-w-full max-h-full object-contain"
                     autoPlay
                   />
+                ) : currentStatus.type === 'text' ? (
+                  <div 
+                    className="w-full h-full flex items-center justify-center relative"
+                    style={{ backgroundColor: currentStatus.backgroundColor || '#6366f1' }}
+                  >
+                    {currentStatus.textContent && (
+                      <div
+                        className="absolute select-none text-center"
+                        style={{
+                          left: `${currentStatus.textPosition?.x || 50}%`,
+                          top: `${currentStatus.textPosition?.y || 50}%`,
+                          transform: 'translate(-50%, -50%)',
+                          color: currentStatus.textColor || '#ffffff',
+                          fontSize: `${currentStatus.textSize || 48}px`,
+                          fontWeight: 'bold',
+                          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                          maxWidth: '80%',
+                          wordWrap: 'break-word'
+                        }}
+                      >
+                        {currentStatus.textContent}
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <img
                     src={currentStatus.mediaURL}

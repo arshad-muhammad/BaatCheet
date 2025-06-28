@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Check, CheckCheck, Star, Reply, Forward, Trash2, File } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useChatStore } from '../../store/chatStore';
 
 interface Message {
   id: string;
@@ -19,18 +20,35 @@ interface Message {
 
 interface MessageBubbleProps {
   message: Message;
-  chat: any;
+  chat: {
+    id: string;
+    name: string;
+    isGroup: boolean;
+    avatar?: string;
+  };
   currentUserId: string;
-  usersById: Record<string, any>;
+  usersById: Record<string, {
+    id: string;
+    name?: string;
+    phone?: string;
+    email?: string;
+    avatar?: string;
+  }>;
+  chatId: string;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUserId, usersById }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUserId, usersById, chatId }) => {
+  const { toggleStar } = useChatStore();
   const isOwnMessage = message.senderId === currentUserId;
   const isGroup = chat.isGroup;
   let senderName = '';
   if (isGroup && usersById && usersById[message.senderId]) {
     senderName = usersById[message.senderId].name || usersById[message.senderId].phone || message.senderId;
   }
+
+  const handleStarToggle = () => {
+    toggleStar(chatId, message.id);
+  };
 
   const getStatusIcon = () => {
     switch (message.status) {
@@ -217,8 +235,15 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, chat, currentUse
           <button className="p-2 hover:bg-pink-100 rounded-lg text-pink-600 transition-all duration-300 hover:scale-110">
             <Forward className="w-4 h-4" />
           </button>
-          <button className="p-2 hover:bg-yellow-100 rounded-lg text-yellow-600 transition-all duration-300 hover:scale-110">
-            <Star className="w-4 h-4" />
+          <button 
+            onClick={handleStarToggle}
+            className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${
+              message.isStarred 
+                ? 'bg-yellow-100 text-yellow-600' 
+                : 'hover:bg-yellow-100 text-yellow-600'
+            }`}
+          >
+            <Star className={`w-4 h-4 ${message.isStarred ? 'fill-current' : ''}`} />
           </button>
           <button className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-all duration-300 hover:scale-110">
             <Trash2 className="w-4 h-4" />

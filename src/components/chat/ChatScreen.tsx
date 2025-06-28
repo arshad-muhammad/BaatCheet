@@ -53,7 +53,7 @@ const gf = new GiphyFetch(GIPHY_API_KEY);
 const ChatScreen = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { chats, messages, addMessage } = useChatStore();
+  const { chats, messages, addMessage, syncFirebaseMessages } = useChatStore();
   const { user } = useAuthStore();
   const { addCall, updateCallDuration, updateCallStatus } = useCallStore();
   const { chat: chatSettings, updateChat } = useSettingsStore();
@@ -130,7 +130,8 @@ const ChatScreen = () => {
     setFirebaseMessages([]); // reset on chat change
     const unsubscribe = onChildAdded(messagesRef, (snapshot) => {
       const msg = snapshot.val();
-      setFirebaseMessages((prev) => [...prev, { ...msg, id: snapshot.key }]);
+      const messageWithId = { ...msg, id: snapshot.key };
+      setFirebaseMessages((prev) => [...prev, messageWithId]);
     });
     fetchAllUsers().then(users => {
       const map = {};
@@ -139,6 +140,13 @@ const ChatScreen = () => {
     });
     return () => unsubscribe();
   }, [id]);
+
+  // Sync Firebase messages with local store when firebaseMessages changes
+  useEffect(() => {
+    if (id && firebaseMessages.length > 0 && isMounted) {
+      syncFirebaseMessages(id, firebaseMessages);
+    }
+  }, [firebaseMessages, id, isMounted]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -834,6 +842,7 @@ const ChatScreen = () => {
               chat={chat}
               currentUserId={user?.id}
               usersById={usersById}
+              chatId={id || ''}
             />
           ))}
           <div ref={messagesEndRef} />

@@ -1,17 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Plus, Camera, Loader2 } from 'lucide-react';
+import { Plus, Camera, Loader2, Edit3 } from 'lucide-react';
 import { fetchStatusesForAcceptedContacts, getUserInfo } from '../../lib/firebase';
 import { useAuthStore } from '../../store/authStore';
 import StatusViewer from './StatusViewer';
+import StatusUploadDialog from './StatusUploadDialog';
 
 interface StatusItem {
   id: string;
   mediaURL: string;
   userId: string;
   timestamp: number;
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'text';
+  textContent?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  textSize?: number;
+  textPosition?: {
+    x: number;
+    y: number;
+  };
 }
 
 interface UserStatuses {
@@ -27,6 +36,7 @@ const StatusList = () => {
   const [groupedStatuses, setGroupedStatuses] = useState<UserStatuses[]>([]);
   const [myStatus, setMyStatus] = useState<{ hasStatus: boolean; avatar: string }>({ hasStatus: false, avatar: '' });
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [currentStatuses, setCurrentStatuses] = useState<StatusItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -118,7 +128,14 @@ const StatusList = () => {
     const myStatuses = groupedStatuses.find(g => g.userId === user?.id)?.statuses || [];
     if (myStatuses.length > 0) {
       handleStatusClick(myStatuses, 0);
+    } else {
+      setUploadDialogOpen(true);
     }
+  };
+
+  const handleUploadSuccess = () => {
+    // Refresh the statuses after upload
+    window.location.reload();
   };
 
   if (loading) {
@@ -174,14 +191,24 @@ const StatusList = () => {
               {myStatus.hasStatus ? 'Tap to view your status' : 'Tap to add status update'}
             </p>
           </div>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            className="text-pink-600 hover:bg-pink-200/50 hover:text-pink-700 p-3 rounded-xl transition-all duration-300 hover:scale-110"
-            onClick={handleMyStatusClick}
-          >
-            <Camera className="w-5 h-5" />
-          </Button>
+          <div className="flex space-x-2">
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-pink-600 hover:bg-pink-200/50 hover:text-pink-700 p-3 rounded-xl transition-all duration-300 hover:scale-110"
+              onClick={handleMyStatusClick}
+            >
+              <Camera className="w-5 h-5" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-pink-600 hover:bg-pink-200/50 hover:text-pink-700 p-3 rounded-xl transition-all duration-300 hover:scale-110"
+              onClick={() => setUploadDialogOpen(true)}
+            >
+              <Edit3 className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -256,6 +283,12 @@ const StatusList = () => {
         currentIndex={currentIndex}
         onIndexChange={setCurrentIndex}
         onStatusDelete={handleStatusDelete}
+      />
+      
+      <StatusUploadDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
+        onUploadSuccess={handleUploadSuccess}
       />
     </div>
   );
